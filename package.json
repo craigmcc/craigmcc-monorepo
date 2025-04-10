@@ -4,6 +4,7 @@
   "license": "Apache-2.0",
   "main": "index.js",
   "name": "@craigmcc/craigmcc-monorepo",
+  "packageManager": "pnpm@10.7.0",
   "private": true,
   "repository": "git+https://github.com/craigmcc/craigmcc-monorepo.git",
   "scripts": {
