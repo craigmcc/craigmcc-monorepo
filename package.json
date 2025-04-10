@@ -8,7 +8,8 @@
   "private": true,
   "repository": "git+https://github.com/craigmcc/craigmcc-monorepo.git",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pnpm recursive run build",
+    "test": "pnpm recursive run test"
   },
   "type": "module",
   "version": "0.0.0"
