@@ -2,6 +2,7 @@
   "author": "craigmcc",
   "description": "Self-created monorepo for my apps and packages.",
   "license": "Apache-2.0",
+  "main": "index.js",
   "name": "@craigmcc/craigmcc-monorepo",
   "private": true,
   "repository": "git+https://github.com/craigmcc/craigmcc-monorepo.git",
