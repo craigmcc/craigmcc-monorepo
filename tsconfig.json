@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "ts-node": {
+    "compilerOptions": {
+      "esm": true,
+      "pretty": true,
+    },
+  }
+}

@@ -7,6 +7,7 @@
 //    "declarationDir": "./dist/types",
     "declarationMap": true,
     "emitDeclarationOnly": false,
+    "esModuleInterop": true,
     "importHelpers": true,
     "isolatedModules": true,
     "lib": ["es2022"],
@@ -22,5 +23,14 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
+    "types": [
+      "node",
+      "jest",
+      "@testing-library/jest-dom"
+    ],
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node",
   }
 }

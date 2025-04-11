@@ -9,8 +9,19 @@
   "repository": "git+https://github.com/craigmcc/craigmcc-monorepo.git",
   "scripts": {
     "build": "pnpm recursive run build",
-    "test": "pnpm recursive run test"
+    "test": "pnpm recursive run test",
+    "test:ci": "pnpm recursive run test:ci"
   },
   "type": "module",
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "devDependencies": {
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-typescript": "^7.27.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.3.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
 }
