@@ -59,7 +59,7 @@ describe("Months", () => {
 
     it("should pass on valid input", () => {
       const TODAY = Dates.today();
-      expect(Months.today()).toBe(TODAY.substr(0, 7));
+      expect(Months.today()).toBe(TODAY.substring(0, 7));
     });
 
   });

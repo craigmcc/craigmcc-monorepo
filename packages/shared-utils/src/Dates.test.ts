@@ -28,7 +28,7 @@ describe("Dates", () => {
     it("should pass on valid input", () => {
       const INPUT = "2022-05-03 12:34:56";
       const DATE = new Date(INPUT);
-      expect(Dates.fromObject(DATE)).toBe(INPUT.substr(0, 10));
+      expect(Dates.fromObject(DATE)).toBe(INPUT.substring(0, 10));
     });
 
   });
@@ -56,7 +56,7 @@ describe("Dates", () => {
     it("should pass on valid input", () => {
       const INPUT = "2022-04-15";
       const OUTPUT = Dates.toObject(INPUT);
-      expect(Dates.fromObject(OUTPUT).substr(0, 10)).toBe(INPUT);
+      expect(Dates.fromObject(OUTPUT).substring(0, 10)).toBe(INPUT);
     })
 
   });

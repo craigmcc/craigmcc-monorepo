@@ -25,7 +25,7 @@ const Months = {
   decrement(value: string, decrement: number): string {
     const original = Dates.toObject(`${value}-01`);
     const updated = subMonths(original, decrement);
-    return Dates.fromObject(updated).substr(0, 7);
+    return Dates.fromObject(updated).substring(0, 7);
   },
 
   /**
@@ -50,7 +50,7 @@ const Months = {
   increment(value: string, increment: number): string {
     const original = Dates.toObject(`${value}-01`);
     const updated = addMonths(original, increment);
-    return Dates.fromObject(updated).substr(0, 7);
+    return Dates.fromObject(updated).substring(0, 7);
   },
 
   /**
@@ -71,7 +71,7 @@ const Months = {
    * @return {string}                 The month string containing today
    */
   today(): string {
-    return Dates.today().substr(0, 7);
+    return Dates.today().substring(0, 7);
   },
 
 }
