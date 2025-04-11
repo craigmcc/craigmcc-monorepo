@@ -9,8 +9,8 @@
   "private": false,
   "scripts": {
     "build": "rm -rf dist && tsc -p .",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:ci": "CI=true node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "vitest",
+    "test:ci": "vitest run"
   },
   "type": "module",
   "version": "1.0.0",
