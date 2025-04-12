@@ -11,7 +11,6 @@ import { addDays, format, subDays } from "date-fns";
 // Public Objects ------------------------------------------------------------
 
 const Dates = {
-
   /**
    * Return the specified date minus decrement days.
    *
@@ -31,9 +30,10 @@ const Dates = {
    */
   fromObject(value: Date): string {
     const temp = format(value, "P");
-    return temp.substr(6, 4) + "-"
-      + temp.substr(0, 2) + "-"
-      + temp.substr(3, 2);
+    // prettier-ignore
+    return temp.substring(6, 10) + "-"
+      + temp.substring(0, 2) + "-"
+      + temp.substring(3, 5);
   },
 
   /**
@@ -65,7 +65,6 @@ const Dates = {
   toObject(value: string): Date {
     return new Date(value + " 00:00:00");
   },
-
-}
+};
 
 export default Dates;

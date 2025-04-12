@@ -8,7 +8,6 @@
 // Public Objects ------------------------------------------------------------
 
 const Timestamps = {
-
   /**
    * Return a timestamp string in ISO format (yyyy-mm-ddThh:mm:ss+nn) for the
    * specified JavaScript date.  Based on:
@@ -18,6 +17,7 @@ const Timestamps = {
    * @return {string}                 yyyy-mm-ddThh:mm:ss+nn
    */
   iso(date: Date = new Date()): string {
+    // prettier-ignore
     return date.getFullYear()
       + "-" + leftPad((date.getMonth() + 1), 2)
       + "-" + leftPad(date.getDate(), 2)
@@ -35,6 +35,7 @@ const Timestamps = {
    * @return {string}                 yyyymmdd-hhmmss
    */
   local(date: Date = new Date()): string {
+    // prettier-ignore
     return date.getFullYear()
       + leftPad(date.getMonth() + 1, 2)
       + leftPad(date.getDate(), 2)
@@ -42,9 +43,8 @@ const Timestamps = {
       + leftPad(date.getHours(), 2)
       + leftPad(date.getMinutes(), 2)
       + leftPad(date.getSeconds(), 2);
-  }
-
-}
+  },
+};
 
 export default Timestamps;
 
@@ -57,12 +57,13 @@ const leftPad = (input: string | number, size: number): string => {
     output = "0" + output;
   }
   return output;
-}
+};
 
 // Return a local timezone offset string in the format required by ISO 8601.
 const localOffset = (date: Date): string => {
   const offset = date.getTimezoneOffset();
+  // prettier-ignore
   return (offset < 0 ? "+" : "-")
     + leftPad(Math.floor(Math.abs(offset / 60)), 2)
     + ":" + leftPad(Math.abs(offset % 60), 2);
-}
+};

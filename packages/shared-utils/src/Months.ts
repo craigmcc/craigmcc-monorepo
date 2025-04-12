@@ -14,7 +14,6 @@ import Dates from "./Dates";
 // Public Objects ------------------------------------------------------------
 
 const Months = {
-
   /**
    * Return the specified month minus the specified decrement in months.
    *
@@ -36,7 +35,7 @@ const Months = {
    * @return {string}                 The corresponding date (YYYY-MM-DD)
    */
   end(value: string): string {
-    const date =  Dates.toObject(`${value}-01`);
+    const date = Dates.toObject(`${value}-01`);
     return Dates.fromObject(endOfMonth(date));
   },
 
@@ -61,7 +60,7 @@ const Months = {
    * @return {string}                 The corresponding date (YYYY-MM-DD)
    */
   start(value: string): string {
-    const date =  Dates.toObject(`${value}-01`);
+    const date = Dates.toObject(`${value}-01`);
     return Dates.fromObject(startOfMonth(date));
   },
 
@@ -73,7 +72,6 @@ const Months = {
   today(): string {
     return Dates.today().substring(0, 7);
   },
-
-}
+};
 
 export default Months;
