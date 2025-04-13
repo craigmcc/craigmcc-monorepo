@@ -2,13 +2,10 @@
 
 /**
  * General purpose selector for the application.
- *
- * @packageDocumentation
  */
 
 // External Modules ----------------------------------------------------------
 
-// @ts-expect-error React is unused
 import React, { ChangeEvent, SelectHTMLAttributes } from "react";
 
 // Internal Modules ----------------------------------------------------------
@@ -27,36 +24,46 @@ export type SelectOption = {
 type Props = {
   // Optional CSS classes to apply to the select field.
   className?: string;
-  // The label for the select field (if any).
-  label?: string;
+  // Optional disabled state for the select field.
+  disabled?: boolean;
+  // The label for the select field.
+  label: string;
   // HTML name of the select field.
   name: string;
-  // Event handler for change events.
-  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+  // Optional event handler for blur events.
+  onBlur?: (event: React.FocusEvent<HTMLSelectElement>) => void;
+  // Optional event handler for change events.
+  onChang?: (event: ChangeEvent<HTMLSelectElement>) => void;
   // The options for the select field (including header if any).
   options: SelectOption[];
+  // Should the label be displayed above the select field?
+  vertical?: boolean;
 } & SelectHTMLAttributes<HTMLSelectElement>;
 
 export function Select({
   className,
+  disabled,
   label,
   name,
+  onBlur,
   onChange,
   options,
+  vertical,
   ...props
 }: Props) {
   return (
-    <fieldset className={`fieldset w-full ${label ? "grid-cols-2" : ""}`}>
-      {label && (
-        <legend className="fieldset-legend">
-          <label htmlFor={name}>{label}</label>
-        </legend>
-      )}
+    // prettier-ignore
+    <fieldset className={`fieldset w-full grid ${vertical ? "grid-cols-1" : "grid-cols-2 gap-1"}`}>
+      <legend className="fieldset-legend">
+        <label htmlFor={name}>{label}</label>
+      </legend>
       <select
         className={`select w-full ${className ? className : ""}`}
+        disabled={disabled ? disabled : undefined}
         id={name}
         name={name}
-        onChange={onChange}
+        onBlur={onBlur ? onBlur : undefined}
+        onChange={onChange ? onChange : undefined}
         {...props}
       >
         {options.map((option) => (

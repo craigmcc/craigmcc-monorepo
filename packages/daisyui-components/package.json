@@ -2,8 +2,10 @@
   "description": "DaisyUI components for React.",
   "exports": {
     ".": "./dist/index.js",
+    "./Checkbox": "./dist/Checkbox.js",
     "./Input": "./dist/Input.js",
-    "./Select": "./dist/Months.js"
+    "./Select": "./dist/Months.js",
+    "./Textarea": "./dist/Textarea.js"
   },
   "keywords": [],
   "license": "Apache-2.0",

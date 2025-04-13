@@ -1,41 +1,39 @@
 "use client";
 
 /**
- * General purpose input field for the application.
+ * General purpose textarea field for the application.
  */
 
 // External Modules ----------------------------------------------------------
 
-import React, { InputHTMLAttributes } from "react";
+import React, { TextareaHTMLAttributes } from "react";
 
 // Internal Modules ----------------------------------------------------------
 
 // Public Objects ------------------------------------------------------------
 
 type Props = {
-  // Optional CSS classes to apply to the input field.
+  // Optional CSS classes to apply to the textarea field.
   className?: string;
-  // Optional disabled state for the input field.
+  // Optional disabled state for the textarea field.
   disabled?: boolean;
-  // The label for the input field.
+  // The label for the textarea field.
   label: string;
-  // HTML name (and id) of the input field.
+  // HTML name (and id) of the textarea field.
   name: string;
   // Optional event handler for blur events.
-  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (event: React.FocusEvent<HTMLTextAreaElement>) => void;
   // Optional event handler for change events.
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  // Optional placeholder text for the input field.
+  onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  // Optional placeholder text for the textarea field.
   placeholder?: string;
-  // Optional HTML type for the input field. [text]
-  type?: string;
-  // Optional initial value for the input field.
+  // Optional initial value for the textarea field.
   value?: string | number | readonly string[] | undefined;
-  // Should the label be displayed above the input field?
+  // Should the label be displayed above the textarea field?
   vertical?: boolean;
-} & InputHTMLAttributes<HTMLInputElement>;
+} & TextareaHTMLAttributes<HTMLTextAreaElement>;
 
-export function Input({
+export function Textarea({
   className,
   disabled,
   label,
@@ -43,26 +41,24 @@ export function Input({
   onBlur,
   onChange,
   placeholder,
-  type,
   value,
   vertical,
   ...props
 }: Props) {
   return (
     // prettier-ignore
-    <fieldset className={`fieldset w-full grid ${vertical ? "grid-cols-1" : "grid-cols-2 gap-1"}`}>
+    <fieldset className={`fieldset w-full ${vertical ? "grid-cols-1" : "grid-cols-2 gap-1"}`}>
       <legend className="fieldset-legend">
         <label htmlFor={name}>{label}</label>
       </legend>
-      <input
-        className={`input input-bordered w-full ${className ? className : ""}`}
+      <textarea
+        className={`textarea textarea-bordered w-full ${className ? className : ""}`}
         disabled={disabled ? disabled : undefined}
         id={name}
         name={name}
         onBlur={onBlur ? onBlur : undefined}
         onChange={onChange ? onChange : undefined}
         placeholder={placeholder ? placeholder : undefined}
-        type={type ? type : "text"}
         value={value ? value : undefined}
         {...props}
       />
