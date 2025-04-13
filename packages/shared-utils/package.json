@@ -1,10 +1,14 @@
 {
   "author": "craigmcc",
   "description": "Common low level utility functions.",
-  "license": "Apache-2.0",
+  "exports": {
+    ".": "./dist/index.js",
+    "./Dates": "./dist/Dates.js",
+    "./Months": "./dist/Months.js",
+    "./Timestamps": "./dist/Timestamps.js"
+  },
   "keywords": [],
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "license": "Apache-2.0",
   "name": "@craigmcc/shared-utils",
   "packageManager": "pnpm@10.7.0",
   "private": false,

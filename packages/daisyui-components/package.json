@@ -1,8 +1,13 @@
 {
   "description": "DaisyUI components for React.",
+  "exports": {
+    ".": "./dist/index.js",
+    "./Input": "./dist/Input.js",
+    "./Select": "./dist/Months.js"
+  },
+  "keywords": [],
+  "license": "Apache-2.0",
   "name": "@craigmcc/daisyui-components",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
   "private": false,
   "scripts": {
     "build": "rm -rf dist && tsc -p .",
