@@ -1,12 +1,8 @@
 {
-  "author": "craigmcc",
-  "description": "Common low level utility functions.",
-  "license": "Apache-2.0",
-  "keywords": [],
+  "description": "DaisyUI components for React.",
+  "name": "@craigmcc/daisyui-components",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "name": "@craigmcc/shared-utils",
-  "packageManager": "pnpm@10.7.0",
   "private": false,
   "scripts": {
     "build": "rm -rf dist && tsc -p .",
