@@ -8,8 +8,8 @@ import { describe, it, expect } from "vitest";
 
 // Internal Modules ----------------------------------------------------------
 
-import Dates from "./Dates";
-import Months from "./Months";
+import Dates from "../Dates";
+import Months from "../Months";
 
 // Test Methods --------------------------------------------------------------
 

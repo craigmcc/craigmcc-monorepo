@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 
 // Internal Modules ----------------------------------------------------------
 
-import { Input } from "./Input";
+import { Input } from "../Input";
 
 // Test Hooks ----------------------------------------------------------------
 
