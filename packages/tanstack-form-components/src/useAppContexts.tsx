@@ -12,5 +12,6 @@ import { createFormHookContexts } from "@tanstack/react-form";
 
 // Public Objects ------------------------------------------------------------
 
+// prettier-ignore
 export const { fieldContext, formContext, useFieldContext, useFormContext }
   = createFormHookContexts();

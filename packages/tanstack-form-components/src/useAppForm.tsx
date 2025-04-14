@@ -18,12 +18,14 @@ import { InputField } from "./InputField";
 //import { TextareaField } from "./TextareaField";
 import { fieldContext, formContext } from "./useAppContexts";
 
-
 // Public Objects ------------------------------------------------------------
 
+// prettier-ignore
 export const { useAppForm, withForm } = createFormHook({
+  // prettier-ignore
   fieldComponents: {
 //    CheckboxField,
+    // prettier-ignore
     InputField,
 //    SelectField,
 //    TextareaField,

@@ -10,9 +10,9 @@ import React, { InputHTMLAttributes } from "react";
 
 // Internal Modules ----------------------------------------------------------
 
+import { Input } from "@craigmcc/daisyui-components/Input";
 import { FieldErrors } from "./FieldErrors";
 import { useFieldContext } from "./useAppContexts";
-import { Input } from "@craigmcc/daisyui-components/Input"
 
 // Public Objects ------------------------------------------------------------
 
@@ -60,8 +60,10 @@ export function InputField({
       onBlur={onBlur ? onBlur : undefined}
       onChange={onChange ? onChange : undefined}
       placeholder={placeholder ? placeholder : undefined}
+      type={type ? type : "text"}
       value={value ? value : undefined}
       vertical={true}
+      {...props}
     >
       <FieldErrors field={field} />
     </Input>

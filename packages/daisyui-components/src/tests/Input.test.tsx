@@ -37,7 +37,7 @@ describe("Input", () => {
     render(<Input
       label={LABEL}
       name={NAME}
-      placeholder="Enter text here"
+      placeholder={PLACEHOLDER}
       type="text"
     />);
     const { input } = elements(LABEL);

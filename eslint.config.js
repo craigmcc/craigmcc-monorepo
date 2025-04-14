@@ -13,4 +13,10 @@ export default defineConfig([
   tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,
   eslintPluginPrettierRecommended,
+  {
+    ignores: [
+      "apps/**/dist/**/*", // Ignore all dist directories in the workspace
+      "packages/**/dist/**/*", // Ignore all dist directories in the workspace
+    ],
+  },
 ]);
