@@ -13,6 +13,8 @@ import React, { InputHTMLAttributes } from "react";
 // Public Objects ------------------------------------------------------------
 
 type Props = {
+  // Optional children to render inside the fieldset.
+  children?: React.ReactNode;
   // Optional CSS classes to apply to the input field.
   className?: string;
   // Optional disabled state for the input field.
@@ -36,6 +38,7 @@ type Props = {
 } & InputHTMLAttributes<HTMLInputElement>;
 
 export function Input({
+  children,
   className,
   disabled,
   label,
@@ -66,6 +69,7 @@ export function Input({
         value={value ? value : undefined}
         {...props}
       />
+      {children}
     </fieldset>
   );
 }

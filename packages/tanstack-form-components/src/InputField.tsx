@@ -10,8 +10,8 @@ import React, { InputHTMLAttributes } from "react";
 
 // Internal Modules ----------------------------------------------------------
 
-//import { FieldErrors } from "./FieldErrors";
-//import { useFieldContext } from "./useAppContexts";
+import { FieldErrors } from "./FieldErrors";
+import { useFieldContext } from "./useAppContexts";
 import { Input } from "@craigmcc/daisyui-components/Input"
 
 // Public Objects ------------------------------------------------------------
@@ -49,8 +49,7 @@ export function InputField({
   value,
   ...props
 }: Props) {
-  //  const field = useFieldContext<string>();
-  // TODO - we need <FieldErrors field={field} /> *inside* the Input component's fieldset
+  const field = useFieldContext<string>();
 
   return (
     <Input
@@ -63,6 +62,8 @@ export function InputField({
       placeholder={placeholder ? placeholder : undefined}
       value={value ? value : undefined}
       vertical={true}
-    />
+    >
+      <FieldErrors field={field} />
+    </Input>
   );
 }
