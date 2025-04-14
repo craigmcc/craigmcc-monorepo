@@ -4,7 +4,7 @@
     ".": "./dist/index.js",
     "./Checkbox": "./dist/Checkbox.js",
     "./Input": "./dist/Input.js",
-    "./Select": "./dist/Months.js",
+    "./Select": "./dist/Select.js",
     "./Textarea": "./dist/Textarea.js"
   },
   "keywords": [],

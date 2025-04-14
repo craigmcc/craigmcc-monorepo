@@ -1,0 +1,28 @@
+{
+  "description": "Tanstack Form components for React.",
+  "exports": {
+    ".": "./dist/index.js",
+    "./CheckboxField": "./dist/CheckboxField.js",
+    "./FieldErrors": "./dist/FieldErrors.js",
+    "./InputField": "./dist/InputField.js",
+    "./SelectField": "./dist/SelectField.js",
+    "./TextareaField": "./dist/TextareaField.js",
+    "./useAppContexts": "./dist/useAppContexts.js",
+    "./useAppForm": "./dist/useAppForm.js"
+  },
+  "keywords": [],
+  "license": "Apache-2.0",
+  "name": "@craigmcc/tanstack-form-components",
+  "private": false,
+  "scripts": {
+    "build": "rm -rf dist && tsc -p .",
+    "test": "vitest",
+    "test:ci": "vitest run"
+  },
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "version": "0.0.0",
+  "dependencies": {
+    "@craigmcc/daisyui-components": "workspace:*"
+  }
+}
