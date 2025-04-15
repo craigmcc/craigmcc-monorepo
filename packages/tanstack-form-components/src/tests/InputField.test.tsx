@@ -18,6 +18,11 @@ import { useAppForm } from "../useAppForm";
 
 // Test Infrastructure -------------------------------------------------------
 
+const LABEL = "Test Input";
+const NAME = "name";
+const PLACEHOLDER = "Enter text here";
+//const VALUE = "Test Value";
+
 function elements(labelText: string) {
   const input = screen.getByLabelText(labelText);
   return {
@@ -25,38 +30,29 @@ function elements(labelText: string) {
   };
 }
 
+function TestWrapper() {
+  const form = useAppForm({
+    defaultValues: { name: NAME },
+  });
+  return (
+    <form.AppField name="name">
+      {(field) => (
+        <field.InputField
+          label={LABEL}
+          name={NAME}
+          placeholder={PLACEHOLDER}
+          type="text"
+        />
+      )}
+    </form.AppField>
+  );
+}
+
 // Test Objects --------------------------------------------------------------
 
-const LABEL = "Test Input";
-const NAME = "name";
-const PLACEHOLDER = "Enter text here";
-//const VALUE = "Test Value";
-
-/*
-const schema = object({
-  name: string(),
-});
-type schemaType = z.infer<typeof schema>;
-*/
-
-// TODO - cannot call useAppForm in a test since it is not in a component
-describe.todo("InputField", () => {
+describe("InputField", () => {
   it("should render an input field as expected", () => {
-    const form = useAppForm({
-      defaultValues: { name: NAME },
-    });
-    render(
-      <form.AppField name="name">
-        {(field) => (
-          <field.InputField
-            label={LABEL}
-            name={NAME}
-            placeholder={PLACEHOLDER}
-            type="text"
-          />
-        )}
-      </form.AppField>
-    );
+    render(<TestWrapper />);
     const { input } = elements(LABEL);
     expect(input).toBeInTheDocument();
     expect(input).not.toHaveAttribute("disabled");
