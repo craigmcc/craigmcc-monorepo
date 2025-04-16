@@ -1,0 +1,135 @@
+"use client";
+
+import "@testing-library/jest-dom";
+import { render, screen } from "@testing-library/react";
+// @ts-expect-error React is not used
+import React from "react";
+import { describe, expect, it } from "vitest";
+import { AppFormWrapper } from "./AppFormWrapper";
+import { InputField } from "../InputField";
+//import { fieldContext } from "../useAppContexts";
+
+const LABEL = "Test Input";
+const NAME = "name";
+const PLACEHOLDER = "Enter text here";
+
+function elements(labelText: string) {
+  const input = screen.getByLabelText(labelText);
+  return { input };
+}
+
+describe("InputField", () => {
+  it("should render an input field as expected", () => {
+    // @ts-ignore
+    const mockField = {
+      form: {
+        options: {},
+        baseStore: {},
+        fieldMetaDerived: {},
+        store: {},
+        state: {
+          meta: {
+            errors: [],
+          },
+        },
+        getState: () => ({
+          meta: {
+            errors: [],
+          },
+        }),
+        setValue: () => {},
+        setTouched: () => {},
+        setError: () => {},
+        reset: () => {},
+        validate: async () => {},
+        batch: (callback: () => void) => callback(),
+        runValidator: async () => {},
+        getFieldState: () => ({}),
+        getFieldMeta: () => ({}),
+        getFieldValue: () => undefined,
+        getFieldError: () => undefined,
+        getFieldTouched: () => false,
+        getFieldOptions: () => ({}),
+        getFieldStore: () => ({}),
+        getFieldTimeoutIds: () => new Set(),
+        fieldInfo: {},
+        prevTransformArray: [],
+        cumulativeFieldsErrorMap: {},
+        mount: () => {},
+        unmount: () => {},
+        update: () => {},
+      },
+      name: NAME,
+      options: {},
+      store: {},
+      state: {
+        meta: {
+          errors: [],
+        },
+      },
+      getInputProps: () => ({}),
+      getMeta: () => ({}),
+      setValue: () => {},
+      setTouched: () => {},
+      setError: () => {},
+      timeoutIds: new Set(),
+      runValidator: async () => {},
+      mount: () => {},
+      unmount: () => {},
+      update: () => {},
+      validate: async () => {},
+      reset: () => {},
+      batch: (callback: () => void) => callback(),
+      getState: () => ({
+        meta: {
+          errors: [],
+        },
+      }),
+      getValue: () => undefined,
+      setMeta: () => {},
+      getInfo: () => ({}),
+      pushValue: () => {},
+      removeValue: () => {},
+      insertValue: () => {},
+      swapValues: () => {},
+      moveValue: () => {},
+      replaceValue: () => {},
+      clearValue: () => {},
+      getOptions: () => ({}),
+      getStore: () => ({}),
+      getTimeoutIds: () => new Set(),
+      getLinkedFields: () => [],
+      validateSync: () => [],
+      validateAsync: async () => [],
+      handleChange: () => {},
+      handleBlur: () => {},
+      setErrorMap: () => {},
+    };
+
+    render(
+//      <fieldContext.Provider value={mockField}>
+        <AppFormWrapper defaultValues={{ name: "" }}>
+          {() => (
+            <InputField
+              label={LABEL}
+              name={NAME}
+              placeholder={PLACEHOLDER}
+              type="text"
+            />
+          )}
+        </AppFormWrapper>
+//      </fieldContext.Provider>
+    );
+
+    const { input } = elements(LABEL);
+    expect(input).toBeInTheDocument();
+    expect(input).not.toHaveAttribute("disabled");
+    expect(input).toHaveAttribute("id", NAME);
+    expect(input).toHaveAttribute("name", NAME);
+    expect(input).not.toHaveAttribute("onBlur");
+    expect(input).not.toHaveAttribute("onChange");
+    expect(input).toHaveAttribute("placeholder", PLACEHOLDER);
+    expect(input).toHaveAttribute("type", "text");
+    expect(input).not.toHaveAttribute("value");
+  });
+});

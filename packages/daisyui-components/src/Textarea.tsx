@@ -12,7 +12,7 @@ import React, { TextareaHTMLAttributes } from "react";
 
 // Public Objects ------------------------------------------------------------
 
-type Props = {
+export type TextareaProps = {
   // Optional CSS classes to apply to the textarea field.
   className?: string;
   // Optional disabled state for the textarea field.
@@ -44,7 +44,7 @@ export function Textarea({
   value,
   vertical,
   ...props
-}: Props) {
+}: TextareaProps) {
   return (
     // prettier-ignore
     <fieldset className={`fieldset w-full ${vertical ? "grid-cols-1" : "grid-cols-2 gap-1"}`}>

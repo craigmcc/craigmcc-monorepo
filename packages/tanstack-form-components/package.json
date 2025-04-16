@@ -6,6 +6,7 @@
     "./FieldErrors": "./dist/FieldErrors.js",
     "./InputField": "./dist/InputField.js",
     "./SelectField": "./dist/SelectField.js",
+    "./SubmitButton": "./dist/SubmitButton.js",
     "./TextareaField": "./dist/TextareaField.js",
     "./useAppContexts": "./dist/useAppContexts.js",
     "./useAppForm": "./dist/useAppForm.js"

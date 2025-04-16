@@ -1,0 +1,49 @@
+import { ReactNode } from "react";
+import { useAppForm } from "../useAppForm";
+import { FormAsyncValidateOrFn, FormValidateOrFn, FormApi } from "@tanstack/react-form";
+
+interface UseAppFormProps<TFormData> {
+  defaultValues?: Partial<TFormData>;
+  validationSchema?: any;
+  onSubmit?: (values: TFormData) => void;
+  onReset?: () => void;
+  validateOnBlur?: boolean;
+  validateOnChange?: boolean;
+}
+
+type UseAppFormReturn<TFormData> = FormApi<
+  TFormData,
+  FormValidateOrFn<TFormData> | undefined,
+  FormValidateOrFn<TFormData> | undefined,
+  FormAsyncValidateOrFn<TFormData> | undefined,
+  FormValidateOrFn<TFormData> | undefined,
+  FormAsyncValidateOrFn<TFormData> | undefined,
+  FormValidateOrFn<TFormData> | undefined,
+  FormAsyncValidateOrFn<TFormData> | undefined,
+  FormAsyncValidateOrFn<TFormData> | undefined,
+  Record<string, any>
+>;
+
+type AppFormWrapperProps<TFormData extends Record<string, any>> = UseAppFormProps<TFormData> & {
+  children: (form: UseAppFormReturn<TFormData>) => ReactNode;
+};
+
+export function AppFormWrapper<TFormData extends Record<string, any>>({
+                                                                        children,
+                                                                        ...formProps
+                                                                      }: AppFormWrapperProps<TFormData>) {
+  const form = useAppForm<
+    TFormData,
+    FormValidateOrFn<TFormData> | undefined,
+    FormValidateOrFn<TFormData> | undefined,
+    FormAsyncValidateOrFn<TFormData> | undefined,
+    FormValidateOrFn<TFormData> | undefined,
+    FormAsyncValidateOrFn<TFormData> | undefined,
+    FormValidateOrFn<TFormData> | undefined,
+    FormAsyncValidateOrFn<TFormData> | undefined,
+    FormAsyncValidateOrFn<TFormData> | undefined,
+    Record<string, any>
+  >(formProps as any) as UseAppFormReturn<TFormData>; // Explicit cast to align types
+
+  return <>{children(form)}</>;
+}

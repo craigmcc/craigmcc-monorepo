@@ -21,7 +21,7 @@ export type SelectOption = {
   value: string;
 };
 
-type Props = {
+export type SelectProps = {
   // Optional CSS classes to apply to the select field.
   className?: string;
   // Optional disabled state for the select field.
@@ -50,7 +50,7 @@ export function Select({
   options,
   vertical,
   ...props
-}: Props) {
+}: SelectProps) {
   return (
     // prettier-ignore
     <fieldset className={`fieldset w-full grid ${vertical ? "grid-cols-1" : "grid-cols-2 gap-1"}`}>

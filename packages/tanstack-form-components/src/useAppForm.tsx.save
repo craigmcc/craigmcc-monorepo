@@ -5,35 +5,26 @@
  */
 
 // External Modules ----------------------------------------------------------
-
 import { createFormHook } from "@tanstack/react-form";
+import React from "react";
 
 // Internal Modules ----------------------------------------------------------
-
-//import { CheckboxField } from "./CheckboxField";
 import { InputField } from "./InputField";
-//import { ResetButton } from "./ResetButton";
-//import { SelectField } from "./SelectField";
-//import { SubmitButton } from "/SubmitButton";
-//import { TextareaField } from "./TextareaField";
+import { SubmitButton } from "./SubmitButton";
 import { fieldContext, formContext } from "./useAppContexts";
 
 // Public Objects ------------------------------------------------------------
 
-// prettier-ignore
-export const { useAppForm, withForm } = createFormHook({
-  // prettier-ignore
+export const { useAppForm, withForm } = createFormHook<
+  Record<string, React.ComponentType<any>>,
+  Record<string, React.ComponentType<any>>
+>({
   fieldComponents: {
-//    CheckboxField,
-    // prettier-ignore
-    InputField,
-//    SelectField,
-//    TextareaField,
+    InputField: InputField,
   },
-  fieldContext,
   formComponents: {
-//    ResetButton,
-//    SubmitButton,
+    SubmitButton: SubmitButton,
   },
-  formContext,
+  fieldContext: fieldContext as typeof fieldContext,
+  formContext: formContext as typeof formContext,
 });
