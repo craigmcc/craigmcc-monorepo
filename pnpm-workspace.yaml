@@ -62,8 +62,8 @@ catalogs:
   react-toastify:
     react-toastify: 11.0.5
   tailwind4:
-    "@tailwindcss/postcss": 4.2.2
-    tailwindcss: 4.2.2
+    "@tailwindcss/postcss": 4.3.0
+    tailwindcss: 4.3.0
   tailwind-merge:
     tailwind-merge: 3.5.0
   tanstack:
