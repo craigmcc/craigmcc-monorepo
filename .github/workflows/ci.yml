@@ -58,7 +58,7 @@ jobs:
       - name: Generate Prisma client and migrate to dummy database for db-shopshop
         env:
           DATABASE_URL: postgres://postgres@postgres@localhost:5432/shopshop
-        run: cd packages/db-shopshop; pnpm run db-shopshop:generate; pnpm run db-shopshop:migrate; cd ../..
+        run: cd packages/db-shopshop; prisma generate; prisma migrate dev; cd ../..
 
       - name: Build
         env:
