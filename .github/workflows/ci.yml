@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
-    types: [opened, synchronize]
+    types: [ opened, synchronize ]
 
 jobs:
   build:
@@ -55,13 +55,12 @@ jobs:
       - name: Ensure tsconfig exports are available for TypeScript
         run: node ./scripts/prepare-tsconfig-exports.js
 
-      - name: Create .env file for db-shopshop setup steps
-        run: echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/shopshop" > .env
-
       - name: Generate Prisma client and migrate to dummy database for db-shopshop
-#        env:
-#          DATABASE_URL: postgres://postgres@postgres@localhost:5432/shopshop
-        run: cd packages/db-shopshop; pnpm run db-shopshop:generate; pnpm run db-shopshop:migrate; cd ../..
+        working-directory: packages/db-shopshop
+        run: |
+          echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/shopshop" > .env
+          pnpm run db-shopshop:generate
+          pnpm run db-shopshop:migrate
 
       - name: Build
         env:
