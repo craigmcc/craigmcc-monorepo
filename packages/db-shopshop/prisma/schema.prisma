@@ -1,0 +1,166 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ----- APPLICATION MODELS --------------------------------------------------
+
+/// Category (within a List) that groups related Items
+model Category {
+  /// Primary key for this Category
+  id   String @id @default(uuid())
+  /// Name of this Category
+  name String @db.Text
+
+  /// Created at timestamp
+  createdAt DateTime @default(now()) @map("created_at")
+  /// Updated at timestamp
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  /// Items belonging to this Category
+  items Item[]
+
+  /// List ID of the List this Category belongs to
+  listId String @map("list_id")
+  /// List this Category belongs to
+  list   List   @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@index([listId])
+  @@map("categories")
+}
+
+/// Item (within a List and a Category) that can appear in a particular List
+model Item {
+  /// Primary key for this Item
+  id       String  @id @default(uuid())
+  /// Has this Item been marked as already acquired?
+  checked  Boolean @default(false)
+  /// Name of this Item
+  name     String  @db.Text
+  /// Optional notes associated with this Item
+  notes    String? @db.Text
+  /// Optional quantity associated with this Item
+  quantity Int?
+  /// Has this Item been marked as currently active on a List?
+  selected Boolean @default(false)
+
+  /// Created at timestamp
+  createdAt DateTime @default(now()) @map("created_at")
+  /// Updated at timestamp
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  /// Category ID of the Category this Item belongs to
+  categoryId String   @map("category_id")
+  /// Category this Item belongs to
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  /// List ID of the List this Item belongs to
+  listId     String   @map("list_id")
+  /// List this Item belongs to
+  list       List     @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+  @@index([listId])
+  @@map("items")
+}
+
+/// Individual shopping list
+model List {
+  /// Primary key for this List
+  id       String  @id @default(uuid())
+  /// Optional avatar image URL for this List
+  imageUrl String? @map("image_url") @db.Text
+  /// List's name
+  name     String  @db.Text
+  /// Should this List be private (not shareable with other users)?
+  private  Boolean @default(false)
+
+  /// Created at timestamp
+  createdAt DateTime @default(now()) @map("created_at")
+  /// Updated at timestamp
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  /// Categories belonging to this List
+  categories Category[]
+
+  /// Items belonging to this List
+  items Item[]
+
+  /// Members of this List
+  members Member[]
+
+  // /// ID of the Profile that created this List
+  // profileId String
+  // /// Profile that created this List
+  // profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  //
+  // @@index([profileId])
+  @@map("lists")
+}
+
+/// Membership of a particular Profile to a particular List
+model Member {
+  /// Primary key for this Member
+  id   String     @id @default(uuid())
+  /// Role of this Member on this List
+  role MemberRole @default(GUEST)
+
+  /// Created at timestamp
+  createdAt DateTime @default(now()) @map("created_at")
+  /// Updated at timestamp
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  /// ID of the List that is the subject of this Membership
+  listId    String  @map("list_id")
+  /// List that is the subject of this Membership
+  list      List    @relation(fields: [listId], references: [id], onDelete: Cascade)
+  /// ID of the Profile that is the subject of this Membership
+  profileId String  @map("profile_id")
+  /// Profile that is the subject of this Membership
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([listId])
+  @@index([profileId])
+  @@map("members")
+}
+
+/// Role of a Member in a List
+enum MemberRole {
+  ADMIN
+  GUEST
+}
+
+/// Profile for a local User
+model Profile {
+  /// Primary key for this Profile
+  id       String  @id @default(uuid())
+  /// Email address for this Profile
+  email    String  @unique @db.Text
+  /// Optional avatar image URL for this Profile
+  imageUrl String? @map("image_url") @db.Text
+  /// Profile's name
+  name     String  @db.Text
+  /// Profile's password (encrypted in the database)
+  password String  @db.Text
+
+  /// Created at timestamp
+  createdAt DateTime @default(now()) @map("created_at")
+  /// Updated at timestamp
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // /// Lists created by this Profile
+  // lists   List[]
+  /// Members this Profile is part of
+  members Member[]
+
+  @@map("profiles")
+}

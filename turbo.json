@@ -1,6 +1,9 @@
 {
   "$schema": "https://v2-9-5.turborepo.dev/schema.json",
-  "globalEnv": [ "NODE_ENV" ],
+  "globalEnv": [
+    "DATABASE_URL",
+    "NODE_ENV"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -9,6 +12,24 @@
     },
     "check-types": {
       "dependsOn": ["^check-types"]
+    },
+    "db-shopshop:deploy": {
+      "cache": false
+    },
+    "db-shopshop:generate": {
+      "cache": false
+    },
+    "db-shopshop:migrate": {
+      "cache": false
+    },
+    "db-shopshop:migrate:test": {
+      "cache": false
+    },
+    "db-shopshop:studio": {
+      "cache": false
+    },
+    "db-shopshop:studio:test": {
+      "cache": false
     },
     "dev": {
       "cache": false,

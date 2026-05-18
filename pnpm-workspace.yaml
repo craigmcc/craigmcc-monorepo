@@ -13,6 +13,8 @@ catalogs:
     daisyui: 5.5.19
   date-fns:
     date-fns: 4.1.0
+  dotenvx:
+    '@dotenvx/dotenvx': 1.66.0
   eslint9:
     '@eslint/js': 9.39.2
     '@eslint/eslintrc': 3.3.3
@@ -50,6 +52,12 @@ catalogs:
     pino: 10.3.1
   postcss:
     postcss: 8.5.14
+  postgres:
+    pg: 8.20.0
+  prisma7:
+    "@prisma/adapter-pg": 7.8.0
+    "@prisma/client": 7.8.0
+    prisma: 7.8.0
   react-aria-components:
     react-aria-components: 1.16.0
   react19:
@@ -74,6 +82,8 @@ catalogs:
     "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 16.3.2
     "@testing-library/user-event": 14.6.1
+  tsx:
+    tsx: 4.22.1
   typescript5:
     typescript: 5.8.3
   typescript6:

@@ -1,0 +1,32 @@
+{
+  "description": "Prisma client and generated models for the ShopShop application database",
+  "exports": {
+    "./*": "./dist/index.js"
+  },
+  "license": "Apache-2.0",
+  "name": "@repo/db-shopshop",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "db-shopshop:deploy": "prisma migrate deploy",
+    "db-shopshop:generate" : "prisma generate",
+    "db-shopshop:migrate": "prisma migrate dev",
+    "db-shopshop:migrate:test": "dotenvx run -f .env.test -- prisma migrate dev",
+    "db-shopshop:studio": "prisma studio --port 4100",
+    "db-shopshop:studio:test": "dotenvx run -f .env.test -- prisma studio --port 4101"
+  },
+  "type": "module",
+  "version": "0.0.0",
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "prisma": "catalog:prisma7",
+    "tsx": "catalog:tsx"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "catalog:dotenvx",
+    "@prisma/adapter-pg": "catalog:prisma7",
+    "@prisma/client": "catalog:prisma7",
+    "pg": "catalog:postgres"
+  }
+}
