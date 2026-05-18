@@ -37,6 +37,11 @@ jobs:
       - name: Ensure tsconfig exports are available for TypeScript
         run: node ./scripts/prepare-tsconfig-exports.js
 
+      - name: Generate Prisma client and migrate to dummy database for db-shopshop
+        env:
+          DATABASE_URL: file:./github_shopshop.db
+        run: cd packages/db-shopshop; pnpm run db-shopshop:generate; pnpm run db-shopshop:migrate; cd ../..
+
       - name: Build
         env:
           CI: true
