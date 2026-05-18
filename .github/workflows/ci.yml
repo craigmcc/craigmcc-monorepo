@@ -16,6 +16,24 @@ jobs:
     #  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
     #  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
+    # Set up a local Postgres database for db-shopshop.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: shopshop
+          POSTGRES_PORT: 5432
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Check out code
         uses: actions/checkout@v6
@@ -39,7 +57,7 @@ jobs:
 
       - name: Generate Prisma client and migrate to dummy database for db-shopshop
         env:
-          DATABASE_URL: file:./github_shopshop.db
+          DATABASE_URL: postgres://postgres@postgres@localhost:5432/shopshop
         run: cd packages/db-shopshop; pnpm run db-shopshop:generate; pnpm run db-shopshop:migrate; cd ../..
 
       - name: Build
