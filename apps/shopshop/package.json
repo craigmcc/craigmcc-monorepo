@@ -1,0 +1,53 @@
+{
+  "dependencies": {
+    "@repo/daisy-form": "workspace:*",
+    "@repo/daisy-table": "workspace:*",
+    "@repo/daisy-ui": "workspace:*",
+    "@repo/db-shopshop": "workspace:*",
+    "@repo/shared-utils": "workspace:*",
+    "lucide-react": "catalog:lucide",
+    "next": "catalog:next16",
+    "pino": "catalog:pino",
+    "postcss": "catalog:postcss",
+    "react": "catalog:react19",
+    "react-aria-components": "catalog:react-aria-components",
+    "react-dom": "catalog:react19",
+    "react-toastify": "catalog:react-toastify",
+    "zod": "catalog:zod"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "catalog:eslint9",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/testing-react": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
+    "@tailwindcss/postcss": "catalog:tailwind4",
+    "@types/node": "catalog:node24",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19",
+    "@testing-library/jest-dom": "catalog:testing-library",
+    "@vitejs/plugin-react": "^5.1.0",
+    "@vitest/coverage-v8": "catalog:vitest",
+    "daisyui": "catalog:daisyui5",
+    "eslint": "catalog:eslint9",
+    "jsdom": "catalog:jsdom",
+    "eslint-config-next": "catalog:eslint9",
+    "tailwindcss": "catalog:tailwind4",
+    "typescript": "catalog:typescript5",
+    "vitest": "catalog:vitest"
+  },
+  "license": "Apache-2.0",
+  "name": "shopshop",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "check-types": "tsc --noEmit",
+    "dev": "next dev --turbopack --port 3000",
+    "lint": "eslint .",
+    "start": "next start --port 3000",
+    "test": "vitest",
+    "test:ci": "vitest --run --coverage --passWithNoTests"
+  },
+  "type": "module",
+  "version": "0.1.0"
+}

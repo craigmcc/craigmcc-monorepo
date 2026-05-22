@@ -1,0 +1,11 @@
+:root {
+    /* Make react-toastify colors look like those from Daisy UI */
+    --toastify-color-error: var(--color-error);
+    --toastify-color-info: var(--color-info);
+    --toastify-color-success: var(--color-success);
+    --toastify-color-warning: var(--color-warning);
+    --toastify-text-color-error: var(--color-error-content);
+    --toastify-text-color-info: var(--color-info-content);
+    --toastify-text-color-success: var(--color-success-content);
+    --toastify-text-color-warning: var(--color-warning-content);
+}
