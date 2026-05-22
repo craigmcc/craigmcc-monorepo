@@ -24,8 +24,8 @@ import { ThemeWrapper } from "@/components/layout/ThemeWrapper";
 // export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Daisy Showcase",
-  description: "Example components with DaisyUI and React Aria Components",
+  title: "ShopShop",
+  description: "Shopping List Application",
 };
 
 export default async function RootLayout({
