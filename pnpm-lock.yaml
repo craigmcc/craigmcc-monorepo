@@ -671,6 +671,9 @@ importers:
       pg:
         specifier: catalog:postgres
         version: 8.20.0
+      zod:
+        specifier: catalog:zod
+        version: 4.3.6
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
