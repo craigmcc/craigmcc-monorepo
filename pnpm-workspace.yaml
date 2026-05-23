@@ -5,6 +5,8 @@ allowBuilds:
   msw: false
 
 catalogs:
+  better-auth1:
+    better-auth: 1.6.11
   clsx:
     clsx: 2.1.1
   cva:

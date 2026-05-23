@@ -5,6 +5,7 @@
     "@repo/daisy-ui": "workspace:*",
     "@repo/db-shopshop": "workspace:*",
     "@repo/shared-utils": "workspace:*",
+    "better-auth": "catalog:better-auth1",
     "lucide-react": "catalog:lucide",
     "next": "catalog:next16",
     "pino": "catalog:pino",
