@@ -20,7 +20,7 @@ import { toast } from "react-toastify";
 
 import { doSignOutAction } from "@/actions/AuthActions";
 import { useCurrentProfileContext } from "@/contexts/CurrentProfileContext";
-import { Profile } from "@repo/db-shopshop/client";
+import { Profile } from "@repo/db-shopshop";
 
 // Public Objects ------------------------------------------------------------
 

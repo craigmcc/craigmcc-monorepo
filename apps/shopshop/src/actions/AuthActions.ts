@@ -7,12 +7,13 @@
 // External Modules ----------------------------------------------------------
 
 import { ActionResult } from "@repo/daisy-form/ActionResult";
-import { Profile } from "@repo/db-shopshop/client";
+import { dbShopShop, Profile } from "@repo/db-shopshop";
 import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
+import { headers as getHeaders } from "next/headers";
 
 // Internal Modules ----------------------------------------------------------
 
-//import { auth } from "@/auth/auth-server";
+import { auth, invalidateSessionProfileCacheByEmail } from "@/auth/auth-server";
 import { SignInSchemaType } from "@/zod-schemas/SignInSchema";
 import { SignUpSchemaType } from "@/zod-schemas/SignUpSchema";
 
@@ -28,24 +29,45 @@ export async function doSignInAction(formData: SignInSchemaType): Promise<Action
     }
   });
 
-  // TODO: Perform authentication via better-auth.
-  // TODO: If authentication fails, return an ActionResult with an error message.
+  try {
+    // Invoke Better Auth directly in-process from the server action.
+    await auth.api.signInEmail({
+      body: {
+        email: formData.email,
+        password: formData.password,
+      },
+      headers: await getHeaders(),
+    });
 
-  // TODO: Look up the Profile for this email, inserting if necessary (which iss an error because Profile and User are out of sync)
+    // Look up corresponding Profile
+    const profile = await getProfileByEmail(formData.email);
 
-  // TODO: Enhance the completed session by including the Profile
+    if (!profile) {
+      return {
+        message: "Profile not found for this email address",
+      };
+    }
 
-  // TODO: Return the completed result
+    const result: ActionResult<Profile> = {
+      message: undefined,
+      model: profile,
+    };
 
-  const result: ActionResult<Profile> = {
-    message: undefined,
-//    model: profile,
+    logger.trace({
+      context: "AuthActions.doSignInAction.output",
+      email: formData.email,
+    });
+
+    return result;
+
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Sign in failed";
+    logger.error({
+      context: "AuthActions.doSignInAction.error",
+      error,
+    });
+    return { message };
   }
-  logger.trace({
-    context: "AuthActions.doSignInAction.output",
-    result,
-  });
-  return result;
 
 }
 
@@ -55,12 +77,27 @@ export async function doSignOutAction(): Promise<ActionResult<Profile>> {
     context: "AuthActions.doSignOutAction.input",
   });
 
-  // TODO: Perform the better-auth sign out action
+  try {
+    await auth.api.signOut({
+      headers: await getHeaders(),
+    });
 
-  // Report the resulting success
-  return {
-    message: undefined,
-    model: undefined, // TODO: Profile that was signed out???
+    logger.trace({
+      context: "AuthActions.doSignOutAction.output",
+    });
+
+    return {
+      message: undefined,
+      model: undefined,
+    };
+
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Sign out failed";
+    logger.error({
+      context: "AuthActions.doSignOutAction.error",
+      error,
+    });
+    return { message };
   }
 
 }
@@ -76,22 +113,94 @@ export async function doSignUpAction(formData: SignUpSchemaType): Promise<Action
     }
   });
 
-  // TODO: Complete sign up via better-auth (return ActionResult with error on fail)
+  try {
+    // Invoke Better Auth directly in-process from the server action.
+    await auth.api.signUpEmail({
+      body: {
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+      },
+      headers: await getHeaders(),
+    });
 
-  // TODO: Create and save a corresponding Profile (upsert if needed with logged error)
+    // Create corresponding Profile
+    const profile = await upsertProfile(formData.email, formData.name);
 
-  // TODO: Enhance the completed session by including the Profile
+    // Clear any stale/missing cache entry created before profile upsert.
+    invalidateSessionProfileCacheByEmail(formData.email);
 
-  // TODO: Return the completed result
+    if (!profile) {
+      logger.error({
+        context: "AuthActions.doSignUpAction.profile_error",
+        email: formData.email,
+        message: "Failed to create profile after successful sign up",
+      });
+      return {
+        message: "Account created but profile setup failed. Please contact support.",
+      };
+    }
 
-  const result: ActionResult<Profile> = {
-    message: undefined,
-//    model: profile,
+    const result: ActionResult<Profile> = {
+      message: undefined,
+      model: profile,
+    };
+
+    logger.trace({
+      context: "AuthActions.doSignUpAction.output",
+      email: formData.email,
+    });
+
+    return result;
+
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Sign up failed";
+    logger.error({
+      context: "AuthActions.doSignUpAction.error",
+      error,
+    });
+    return { message };
   }
-  logger.trace({
-    context: "AuthActions.doSignUpAction.output",
-    result,
-  });
-  return result;
 
 }
+
+// Private Objects -----------------------------------------------------------
+
+/**
+ * Look up Profile by email and return it, or null if not found.
+ */
+async function getProfileByEmail(email: string): Promise<Profile | null> {
+  try {
+    return await dbShopShop.profile.findUnique({
+      where: { email },
+    });
+  } catch (error) {
+    logger.error({
+      context: "getProfileByEmail",
+      error,
+      email,
+    });
+    return null;
+  }
+}
+
+/**
+ * Create or update Profile for a user.
+ */
+async function upsertProfile(email: string, name: string): Promise<Profile | null> {
+  try {
+    return await dbShopShop.profile.upsert({
+      where: { email },
+      update: { name },
+      create: { email, name },
+    });
+  } catch (error) {
+    logger.error({
+      context: "upsertProfile",
+      error,
+      email,
+    });
+    return null;
+  }
+}
+

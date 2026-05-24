@@ -10,7 +10,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 // Internal Modules ----------------------------------------------------------
 
-import { Profile } from "@repo/db-shopshop/Profile";
+import { Profile } from "@repo/db-shopshop";
 
 // Public Objects ------------------------------------------------------------
 

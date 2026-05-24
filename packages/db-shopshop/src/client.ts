@@ -17,12 +17,14 @@ const adapter = new PrismaPg({
 });
 
 let globalForPrisma =
-  globalThis as unknown as { prisma: PrismaClient };
+  globalThis as unknown as { prisma?: PrismaClient };
 
-export const dbShopShop  =
-  globalForPrisma ||
+export const dbShopShop: PrismaClient =
+  globalForPrisma.prisma ??
   new PrismaClient({
     adapter
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma = dbShopShop;
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = dbShopShop;
+}

@@ -21,7 +21,7 @@ import { toast } from "react-toastify";
 
 import { doSignUpAction } from "@/actions/AuthActions";
 import { useCurrentProfileContext } from "@/contexts/CurrentProfileContext";
-import { Profile } from "@repo/db-shopshop/client";
+import { Profile } from "@repo/db-shopshop";
 import { SignUpSchema, type SignUpSchemaType } from "@/zod-schemas/SignUpSchema";
 
 // Public Objects ------------------------------------------------------------

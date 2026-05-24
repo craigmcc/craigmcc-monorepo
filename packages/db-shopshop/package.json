@@ -1,7 +1,8 @@
 {
   "description": "Prisma client and generated models for the ShopShop application database",
   "exports": {
-    "./*": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./*": "./dist/*.js"
   },
   "license": "Apache-2.0",
   "name": "@repo/db-shopshop",

@@ -19,7 +19,7 @@ import { toast } from "react-toastify";
 
 import { doSignInAction } from "@/actions/AuthActions";
 import { useCurrentProfileContext } from "@/contexts/CurrentProfileContext";
-import { Profile } from "@repo/db-shopshop/client";
+import { Profile } from "@repo/db-shopshop";
 import { SignInSchema, type SignInSchemaType } from "@/zod-schemas/SignInSchema";
 
 // Public Objects ------------------------------------------------------------
