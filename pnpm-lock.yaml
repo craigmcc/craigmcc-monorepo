@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   better-auth1:
+    '@better-auth/prisma-adapter':
+      specifier: 1.6.11
+      version: 1.6.11
     better-auth:
       specifier: 1.6.11
       version: 1.6.11
@@ -341,6 +344,12 @@ importers:
 
   apps/shopshop:
     dependencies:
+      '@better-auth/prisma-adapter':
+        specifier: catalog:better-auth1
+        version: 1.6.11(@better-auth/core@1.6.11(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.3.6))(jose@6.2.3)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.8.3))(typescript@5.8.3))(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.8.3))
+      '@dotenvx/dotenvx':
+        specifier: catalog:dotenvx
+        version: 1.66.0
       '@repo/daisy-form':
         specifier: workspace:*
         version: link:../../packages/daisy-form
@@ -358,7 +367,7 @@ importers:
         version: link:../../packages/shared-utils
       better-auth:
         specifier: catalog:better-auth1
-        version: 1.6.11(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.8.3))(typescript@5.8.3))(mysql2@3.15.3)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.20.0)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.8.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.2(@types/node@24.0.11)(jsdom@29.0.1(@noble/hashes@2.2.0))(msw@2.12.14(@types/node@24.0.11)(typescript@5.8.3))(vite@8.0.8(@types/node@24.0.11)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.22.1)))
+        version: 1.6.11(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.8.3))(typescript@5.8.3))(mysql2@3.15.3)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.20.0)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.8.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.2(@types/node@24.0.11)(jsdom@29.0.1(@noble/hashes@2.2.0))(msw@2.12.14(@types/node@24.0.11)(typescript@5.8.3))(vite@8.0.8(@types/node@24.0.11)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.22.1)))
       lucide-react:
         specifier: catalog:lucide
         version: 1.7.0(react@19.2.4)
@@ -8598,7 +8607,7 @@ snapshots:
 
   baseline-browser-mapping@2.10.13: {}
 
-  better-auth@1.6.11(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.8.3))(typescript@5.8.3))(mysql2@3.15.3)(next@16.2.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.20.0)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.8.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.2(@types/node@24.0.11)(jsdom@29.0.1(@noble/hashes@2.2.0))(msw@2.12.14(@types/node@24.0.11)(typescript@5.8.3))(vite@8.0.8(@types/node@24.0.11)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.22.1))):
+  better-auth@1.6.11(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.8.3))(typescript@5.8.3))(mysql2@3.15.3)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.20.0)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.8.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.2(@types/node@24.0.11)(jsdom@29.0.1(@noble/hashes@2.2.0))(msw@2.12.14(@types/node@24.0.11)(typescript@5.8.3))(vite@8.0.8(@types/node@24.0.11)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.22.1))):
     dependencies:
       '@better-auth/core': 1.6.11(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.3.6))(jose@6.2.3)(kysely@0.28.17)(nanostores@1.3.0)
       '@better-auth/drizzle-adapter': 1.6.11(@better-auth/core@1.6.11(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.3.6))(jose@6.2.3)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)

@@ -6,6 +6,7 @@ allowBuilds:
 
 catalogs:
   better-auth1:
+    "@better-auth/prisma-adapter": 1.6.11
     better-auth: 1.6.11
   clsx:
     clsx: 2.1.1

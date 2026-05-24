@@ -9,10 +9,10 @@ import * as z from "zod";
 // Public Objects ------------------------------------------------------------
 
 export const SignUpSchema = z.object({
-  confirmPassword: z.string().min(1, "Confirm Password is required"),
+  confirmPassword: z.string().min(8, "Confirm Password is required"),
   email: z.email().min(1, "Email is required"),
   name: z.string().min(1, "Name is required"),
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(8, "Password is required"),
 })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
