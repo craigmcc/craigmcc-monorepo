@@ -11,24 +11,18 @@ import { Navbar } from "@repo/daisy-ui/Navbar";
 import { List } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-//import { useEffect } from "react";
 
 // Internal Imports ----------------------------------------------------------
 
+import { useSession } from "@/auth/auth-client";
 import { ThemeChanger } from "@/components/layout/ThemeChanger";
-import { useCurrentProfileContext } from "@/contexts/CurrentProfileContext";
 
 // Public Objects ------------------------------------------------------------
 
 export function NavBar() {
 
-  const { currentProfile } = useCurrentProfileContext();
-
-/*
-  useEffect(() => {
-    // Trigger a re-render when the current profile changes
-  }, [currentProfile]);
-*/
+  const { data: session } = useSession();
+  const profile = session?.profile;
 
   return (
     <Navbar>
@@ -47,8 +41,10 @@ export function NavBar() {
       </Navbar.Center>
 
       <Navbar.End className="pr-2">
-        {currentProfile && (
-          <span className="text-secondary p-2">{currentProfile.email}</span>
+        {profile ? (
+          <span className="text-secondary p-2">{profile.email}</span>
+        ) : (
+          <span>Not Logged In</span>
         )}
         <ThemeChanger />
       </Navbar.End>
