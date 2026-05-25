@@ -21,8 +21,8 @@ import { ThemeChanger } from "@/components/layout/ThemeChanger";
 
 export function NavBar() {
 
-  const { data: session } = useSession();
-  const profile = session?.profile;
+const { data: session } = useSession();
+const profile = session?.profile;
 
   return (
     <Navbar>
@@ -44,7 +44,7 @@ export function NavBar() {
         {profile ? (
           <span className="text-secondary p-2">{profile.email}</span>
         ) : (
-          <span>Not Logged In</span>
+          <span>Not Signed In</span>
         )}
         <ThemeChanger />
       </Navbar.End>
