@@ -28,6 +28,7 @@
     "@dotenvx/dotenvx": "catalog:dotenvx",
     "@prisma/adapter-pg": "catalog:prisma7",
     "@prisma/client": "catalog:prisma7",
+    "@prisma/client-runtime-utils": "catalog:prisma7",
     "pg": "catalog:postgres",
     "zod": "catalog:zod"
   }
