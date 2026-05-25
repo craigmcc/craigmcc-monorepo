@@ -7,6 +7,7 @@
 // External Imports ----------------------------------------------------------
 
 import { Button } from "@repo/daisy-ui/Button";
+import { Menu } from "@repo/daisy-ui/Menu";
 import { Navbar } from "@repo/daisy-ui/Navbar";
 import { List } from "lucide-react";
 import Link from "next/link";
@@ -42,9 +43,24 @@ const profile = session?.profile;
 
       <Navbar.End className="pr-2">
         {profile ? (
-          <span className="text-secondary p-2">{profile.email}</span>
+          <Menu trigger={<Button color={"info"} outline>{profile.name}</Button>}>
+            <Menu.Item>
+              <Link href="/profile">Edit Profile</Link>
+            </Menu.Item>
+            <Menu.Separator/>
+            <Menu.Item>
+              <Link href="/auth/signOut">Sign Out</Link>
+            </Menu.Item>
+          </Menu>
         ) : (
-          <span>Not Signed In</span>
+          <Menu trigger={<Button color={"info"} outline>Not Signed In</Button>}>
+            <Menu.Item>
+              <Link href="/auth/signIn">Sign In</Link>
+            </Menu.Item>
+            <Menu.Item>
+              <Link href="/auth/signUp">Sign Up</Link>
+            </Menu.Item>
+          </Menu>
         )}
         <ThemeChanger />
       </Navbar.End>

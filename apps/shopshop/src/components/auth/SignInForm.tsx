@@ -11,7 +11,7 @@ import { Card } from "@repo/daisy-ui/Card";
 import { ServerResult } from "@repo/daisy-form/ServerResult";
 import { useAppForm } from "@repo/daisy-form/useAppForm";
 import { clientLogger as logger } from "@repo/shared-utils/ClientLogger";
-//import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
@@ -28,7 +28,7 @@ export function SignInForm() {
 
   const [result, setResult] = useState<ActionResult<Profile> | null>(null);
   const { setCurrentProfile } = useCurrentProfileContext();
-//  const router = useRouter();
+  const router = useRouter();
 
   const defaultValues: SignInSchemaType = {
     email: "",
@@ -66,8 +66,7 @@ export function SignInForm() {
       setResult(null);
       setCurrentProfile(result.model);
       toast.success("Welcome to this application!");
-      // In a real application, we would redirect to a dashboard or home page.
-//      router.push("/");
+      router.push("/");
 
     } else {
 

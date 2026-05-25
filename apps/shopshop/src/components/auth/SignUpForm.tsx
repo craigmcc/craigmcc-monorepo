@@ -13,7 +13,7 @@ import { Card } from "@repo/daisy-ui/Card";
 import { ServerResult } from "@repo/daisy-form/ServerResult";
 import { useAppForm } from "@repo/daisy-form/useAppForm";
 import { clientLogger as logger } from "@repo/shared-utils/ClientLogger";
-//import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {  useState } from "react";
 import { toast } from "react-toastify";
 
@@ -30,7 +30,7 @@ export function SignUpForm() {
 
   const [result, setResult] = useState<ActionResult<Profile> | null>(null);
   const { setCurrentProfile } = useCurrentProfileContext();
-//  const router = useRouter();
+  const router = useRouter();
 
   const defaultValues: SignUpSchemaType = {
     confirmPassword: "",
@@ -66,8 +66,7 @@ export function SignUpForm() {
       setResult(null);
       setCurrentProfile(response.model);
       toast.success(`Profile for '${formData.name}' was successfully created`);
-      // In a real application, we would redirect the user to the home page
-//      router.push("/");
+      router.push("/");
     } else {
       setResult(response);
     }
