@@ -7,6 +7,7 @@
 import { dbShopShop, Profile } from "@repo/db-shopshop"
 import { serverLogger as logger } from "@repo/shared-utils";
 import { betterAuth } from "better-auth";
+import type { Auth, BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { customSession } from "better-auth/plugins";
 
@@ -29,29 +30,37 @@ export function invalidateSessionProfileCacheByEmail(email: string): void {
   sessionProfileCache.delete(cacheKey);
 }
 
-export const auth = betterAuth({
+const customSessionPlugin: ReturnType<typeof customSession> = customSession(async ({ session, user }) => {
+  const profile = await getOrCreateCachedSessionProfile(user.email, user.name);
+  logger.info({
+    context: "auth-server:customSession",
+    message: "Retrieved profile for session",
+    profile,
+  });
+  return {
+    session,
+    user,
+    profile,
+  };
+});
+
+type AuthOptions = BetterAuthOptions & {
+  plugins: [typeof customSessionPlugin];
+};
+
+const authOptions: AuthOptions = {
   database: prismaAdapter(dbShopShop, {
     provider: "postgresql",
   }),
   plugins: [
-    customSession(async ({ session, user }) => {
-      const profile = await getOrCreateCachedSessionProfile(user.email, user.name);
-      logger.info({
-        context: "auth-server:customSession",
-        message: "Retrieved profile for session",
-        profile,
-      })
-      return {
-        session,
-        user,
-        profile,
-      };
-    }),
+    customSessionPlugin,
   ],
   emailAndPassword: {
-    enabled: true
-  }
-});
+    enabled: true,
+  },
+};
+
+export const auth: Auth<AuthOptions> = betterAuth(authOptions);
 
 // Private Objects -----------------------------------------------------------
 
