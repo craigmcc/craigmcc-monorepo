@@ -11,6 +11,9 @@
     "moduleDetection": "force",
     "moduleResolution": "Bundler",
     "noUncheckedIndexedAccess": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,

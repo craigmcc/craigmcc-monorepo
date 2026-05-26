@@ -10,6 +10,7 @@
     "declaration": true,
     "declarationMap": true,
     "paths": {
+      "@/*": ["./scripts/*"],
       "@repo/*": ["./packages/*/src", "./apps/*/src"]
     }
   },
