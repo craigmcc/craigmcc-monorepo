@@ -36,7 +36,7 @@
     "jsdom": "catalog:jsdom",
     "eslint-config-next": "catalog:eslint9",
     "tailwindcss": "catalog:tailwind4",
-    "typescript": "catalog:typescript5",
+    "typescript": "catalog:typescript6",
     "vitest": "catalog:vitest"
   },
   "license": "Apache-2.0",
