@@ -4,13 +4,14 @@
 
 // External Modules ----------------------------------------------------------
 
+import { dbShopShop, Profile } from "@repo/db-shopshop"
+import { serverLogger as logger } from "@repo/shared-utils";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { customSession } from "better-auth/plugins";
 
 // Internal Modules ---------------------------------------------------------
 
-import { dbShopShop, Profile } from "@repo/db-shopshop"
 
 // Public Objects -----------------------------------------------------------
 
@@ -34,8 +35,12 @@ export const auth = betterAuth({
   }),
   plugins: [
     customSession(async ({ session, user }) => {
-      const profile = await getCachedSessionProfile(user.email);
-
+      const profile = await getOrCreateCachedSessionProfile(user.email, user.name);
+      logger.info({
+        context: "auth-server:customSession",
+        message: "Retrieved profile for session",
+        profile,
+      })
       return {
         session,
         user,
@@ -50,7 +55,13 @@ export const auth = betterAuth({
 
 // Private Objects -----------------------------------------------------------
 
-async function getCachedSessionProfile(email: string): Promise<Profile | null> {
+/**
+ * Look up the user's Profile, creating it if it doesn't exist yet.
+ * Results are cached per email for PROFILE_CACHE_TTL_MS to avoid a DB hit
+ * on every getSession call.  Errors are NOT cached so transient failures
+ * are automatically retried on the next request.
+ */
+async function getOrCreateCachedSessionProfile(email: string, name: string): Promise<Profile | null> {
   const cacheKey = makeSessionProfileCacheKey(email);
   const now = Date.now();
   const cachedEntry = sessionProfileCache.get(cacheKey);
@@ -63,18 +74,27 @@ async function getCachedSessionProfile(email: string): Promise<Profile | null> {
     sessionProfileCache.delete(cacheKey);
   }
 
-  const profile = await dbShopShop.profile.findUnique({
-    where: { email },
-  });
+  try {
+    // upsert: return the existing profile unchanged, or create one on first login.
+    const profile = await dbShopShop.profile.upsert({
+      where: { email },
+      update: {},             // Never overwrite profile data from session
+      create: { email, name },
+    });
 
-  ensureSessionProfileCacheCapacity();
+    ensureSessionProfileCacheCapacity();
 
-  sessionProfileCache.set(cacheKey, {
-    expiresAt: now + PROFILE_CACHE_TTL_MS,
-    profile,
-  });
+    sessionProfileCache.set(cacheKey, {
+      expiresAt: now + PROFILE_CACHE_TTL_MS,
+      profile,
+    });
 
-  return profile;
+    return profile;
+
+  } catch (error) {
+    logger.error({ context: "getOrCreateCachedSessionProfile", error, email });
+    return null; // Don't cache errors — allow retry on next getSession call
+  }
 }
 
 function makeSessionProfileCacheKey(email: string): string {

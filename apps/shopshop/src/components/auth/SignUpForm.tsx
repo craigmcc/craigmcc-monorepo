@@ -14,12 +14,12 @@ import { ServerResult } from "@repo/daisy-form/ServerResult";
 import { useAppForm } from "@repo/daisy-form/useAppForm";
 import { clientLogger as logger } from "@repo/shared-utils/ClientLogger";
 import { useRouter } from "next/navigation";
-import {  useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 
 // Internal Modules ----------------------------------------------------------
 
-import { doSignUpAction } from "@/actions/AuthActions";
+import { getSession, signUp } from "@/auth/auth-client";
 import { useCurrentProfileContext } from "@/contexts/CurrentProfileContext";
 import { Profile } from "@repo/db-shopshop";
 import { SignUpSchema, type SignUpSchemaType } from "@/zod-schemas/SignUpSchema";
@@ -57,18 +57,40 @@ export function SignUpForm() {
       formData: {
         ...formData,
         confirmPassword: "*REDACTED*",
-        password:"*REDACTED*",
+        password: "*REDACTED*",
       }
     });
 
-    const response = await doSignUpAction(formData);
-    if (response.model) {
+    // Step 1: create the Better Auth account via the HTTP route so the browser
+    // receives the session cookie in the response headers.
+    const { data: authData, error: authError } = await signUp.email({
+      email: formData.email,
+      name: formData.name,
+      password: formData.password,
+    });
+
+    if (authError || !authData) {
+      const message = authError?.message ?? "Sign up failed. Please try again.";
+      logger.trace({ context: "SignUpForm.submitForm.auth_error", message });
+      setResult({ message });
+      return;
+    }
+
+    // Step 2: fetch the enriched session so we have the newly created Profile.
+    const sessionResult = await getSession();
+    const profile = sessionResult.data?.profile ?? null;
+
+    if (profile) {
       setResult(null);
-      setCurrentProfile(response.model);
+      setCurrentProfile(profile);
       toast.success(`Profile for '${formData.name}' was successfully created`);
       router.push("/");
     } else {
-      setResult(response);
+      logger.trace({
+        context: "SignUpForm.submitForm.profile_error",
+        error: "Profile not returned in session",
+      });
+      setResult({ message: "Account created, but profile could not be loaded. Please try signing in." });
     }
 
   }

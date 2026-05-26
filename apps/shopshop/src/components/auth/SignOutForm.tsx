@@ -12,13 +12,13 @@ import { Card } from "@repo/daisy-ui/Card";
 import { ServerResult } from "@repo/daisy-form/ServerResult";
 import { clientLogger as logger } from "@repo/shared-utils/ClientLogger";
 import { LoaderCircle } from "lucide-react";
-//import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
 // Internal Modules ----------------------------------------------------------
 
-import { doSignOutAction } from "@/actions/AuthActions";
+import { signOut } from "@/auth/auth-client";
 import { useCurrentProfileContext } from "@/contexts/CurrentProfileContext";
 import { Profile } from "@repo/db-shopshop";
 
@@ -26,7 +26,7 @@ import { Profile } from "@repo/db-shopshop";
 
 export function SignOutForm() {
 
-//  const router = useRouter();
+  const router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState<boolean>(false);
   const [result, setResult] = useState<ActionResult<Profile> | null>(null);
   const { setCurrentProfile } = useCurrentProfileContext();
@@ -41,7 +41,14 @@ export function SignOutForm() {
     try {
 
       setIsSigningOut(true);
-      await doSignOutAction();
+
+      // Sign out via HTTP route so the session cookie is properly cleared
+      // in the browser response.
+      const { error } = await signOut();
+      if (error) {
+        throw new Error(error.message ?? "Sign out failed");
+      }
+
       logger.trace({
         context: "SignOutForm.submitForm.success",
         message: "Sign out successful",
@@ -50,6 +57,7 @@ export function SignOutForm() {
       setCurrentProfile(null);
 
       toast.success("Sign out successful");
+      router.push("/");
 
     } catch (error) {
 

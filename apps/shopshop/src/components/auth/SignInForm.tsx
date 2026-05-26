@@ -17,7 +17,7 @@ import { toast } from "react-toastify";
 
 // Internal Modules ----------------------------------------------------------
 
-import { doSignInAction } from "@/actions/AuthActions";
+import { getSession, signIn } from "@/auth/auth-client";
 import { useCurrentProfileContext } from "@/contexts/CurrentProfileContext";
 import { Profile } from "@repo/db-shopshop";
 import { SignInSchema, type SignInSchemaType } from "@/zod-schemas/SignInSchema";
@@ -56,26 +56,40 @@ export function SignInForm() {
       }
     });
 
-    const result = await doSignInAction(formData);
-    if (result.model) {
+    // Step 1: authenticate via the HTTP route so the browser receives the
+    // session cookie in the response headers (cannot use a server action for
+    // this — server actions don't forward Better Auth's set-cookie headers).
+    const { data: authData, error: authError } = await signIn.email({
+      email: formData.email,
+      password: formData.password,
+    });
 
+    if (authError || !authData) {
+      const message = authError?.message ?? "Sign in failed. Please check your credentials.";
+      logger.trace({ context: "SignInForm.submitForm.auth_error", message });
+      setResult({ message });
+      return;
+    }
+
+    // Step 2: fetch the enriched session so we have the application Profile.
+    const sessionResult = await getSession();
+    const profile = sessionResult.data?.profile ?? null;
+
+    if (profile) {
       logger.trace({
         context: "SignInForm.submitForm.success",
         email: formData.email,
       });
       setResult(null);
-      setCurrentProfile(result.model);
+      setCurrentProfile(profile);
       toast.success("Welcome to this application!");
       router.push("/");
-
     } else {
-
       logger.trace({
-        context: "SignInForm.submitForm.error",
-        error: result.message,
+        context: "SignInForm.submitForm.profile_error",
+        error: "Profile not returned in session",
       });
-      setResult({ message: result.message });
-
+      setResult({ message: "Sign in succeeded but profile could not be loaded." });
     }
 
   }

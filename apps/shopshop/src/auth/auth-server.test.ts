@@ -10,13 +10,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Capture the customSession callback so we can invoke it directly in tests.
 const customSessionCapture = vi.hoisted(() => ({
-  fn: null as ((ctx: { session: unknown; user: { email: string } }) => Promise<unknown>) | null,
+  fn: null as ((ctx: { session: unknown; user: { email: string; name: string } }) => Promise<unknown>) | null,
 }));
 
 vi.mock("@repo/db-shopshop", () => ({
   dbShopShop: {
     profile: {
-      findUnique: vi.fn(),
+      upsert: vi.fn(),
     },
   },
 }));
@@ -35,11 +35,19 @@ vi.mock("better-auth/adapters/prisma", () => ({
 
 vi.mock("better-auth/plugins", () => ({
   customSession: vi.fn(
-    (fn: (ctx: { session: unknown; user: { email: string } }) => Promise<unknown>) => {
+    (fn: (ctx: { session: unknown; user: { email: string; name: string } }) => Promise<unknown>) => {
       customSessionCapture.fn = fn;
       return { id: "custom-session" };
     }
   ),
+}));
+
+vi.mock("@repo/shared-utils", () => ({
+  serverLogger: {
+    error: vi.fn(),
+    info: vi.fn(),
+    trace: vi.fn(),
+  },
 }));
 
 // Internal Modules ----------------------------------------------------------
@@ -93,15 +101,16 @@ describe("invalidateSessionProfileCacheByEmail", () => {
 
 });
 
-describe("customSession callback (getCachedSessionProfile)", () => {
+describe("customSession callback (getOrCreateCachedSessionProfile)", () => {
 
-  const mockFindUnique = vi.mocked(dbShopShop.profile.findUnique);
+  const mockUpsert = vi.mocked(dbShopShop.profile.upsert);
 
   beforeEach(() => {
-    mockFindUnique.mockReset();
+    mockUpsert.mockReset();
+    // Clear cache entries used by these tests.
     invalidateSessionProfileCacheByEmail(testUser.email);
-    invalidateSessionProfileCacheByEmail("null@example.com");
     invalidateSessionProfileCacheByEmail("ttl@example.com");
+    invalidateSessionProfileCacheByEmail("error@example.com");
   });
 
   afterEach(() => {
@@ -113,19 +122,30 @@ describe("customSession callback (getCachedSessionProfile)", () => {
   });
 
   it("returns profile from DB on cache miss", async () => {
-    mockFindUnique.mockResolvedValue(testProfile);
+    mockUpsert.mockResolvedValue(testProfile);
 
     const result = await customSessionCapture.fn!({ session: testSession, user: testUser }) as {
       profile: unknown;
     };
 
     expect(result.profile).toEqual(testProfile);
-    expect(mockFindUnique).toHaveBeenCalledOnce();
-    expect(mockFindUnique).toHaveBeenCalledWith({ where: { email: testUser.email } });
+    expect(mockUpsert).toHaveBeenCalledOnce();
+  });
+
+  it("upserts with correct args — preserves existing profile, creates if missing", async () => {
+    mockUpsert.mockResolvedValue(testProfile);
+
+    await customSessionCapture.fn!({ session: testSession, user: testUser });
+
+    expect(mockUpsert).toHaveBeenCalledWith({
+      where: { email: testUser.email },
+      update: {},
+      create: { email: testUser.email, name: testUser.name },
+    });
   });
 
   it("returns session and user alongside profile", async () => {
-    mockFindUnique.mockResolvedValue(testProfile);
+    mockUpsert.mockResolvedValue(testProfile);
 
     const result = await customSessionCapture.fn!({ session: testSession, user: testUser }) as {
       session: unknown;
@@ -139,39 +159,18 @@ describe("customSession callback (getCachedSessionProfile)", () => {
   });
 
   it("does not hit DB on second call within TTL (cache hit)", async () => {
-    mockFindUnique.mockResolvedValue(testProfile);
+    mockUpsert.mockResolvedValue(testProfile);
 
     await customSessionCapture.fn!({ session: testSession, user: testUser });
     await customSessionCapture.fn!({ session: testSession, user: testUser });
 
-    expect(mockFindUnique).toHaveBeenCalledOnce();
-  });
-
-  it("returns null profile when no matching Profile exists in DB", async () => {
-    const nullUser = { ...testUser, email: "null@example.com" };
-    mockFindUnique.mockResolvedValue(null);
-
-    const result = await customSessionCapture.fn!({ session: testSession, user: nullUser }) as {
-      profile: unknown;
-    };
-
-    expect(result.profile).toBeNull();
-  });
-
-  it("caches null result so missing profile does not repeatedly hit DB", async () => {
-    const nullUser = { ...testUser, email: "null@example.com" };
-    mockFindUnique.mockResolvedValue(null);
-
-    await customSessionCapture.fn!({ session: testSession, user: nullUser });
-    await customSessionCapture.fn!({ session: testSession, user: nullUser });
-
-    expect(mockFindUnique).toHaveBeenCalledOnce();
+    expect(mockUpsert).toHaveBeenCalledOnce();
   });
 
   it("re-fetches from DB after TTL expires", async () => {
     vi.useFakeTimers();
     const ttlUser = { ...testUser, email: "ttl@example.com" };
-    mockFindUnique.mockResolvedValue(testProfile);
+    mockUpsert.mockResolvedValue(testProfile);
 
     // First call — cache miss, hits DB.
     await customSessionCapture.fn!({ session: testSession, user: ttlUser });
@@ -182,24 +181,48 @@ describe("customSession callback (getCachedSessionProfile)", () => {
     // Second call — TTL expired, hits DB again.
     await customSessionCapture.fn!({ session: testSession, user: ttlUser });
 
-    expect(mockFindUnique).toHaveBeenCalledTimes(2);
+    expect(mockUpsert).toHaveBeenCalledTimes(2);
   });
 
   it("after invalidation, next call re-fetches from DB", async () => {
-    mockFindUnique.mockResolvedValue(testProfile);
+    mockUpsert.mockResolvedValue(testProfile);
 
     // Populate the cache.
     await customSessionCapture.fn!({ session: testSession, user: testUser });
-    expect(mockFindUnique).toHaveBeenCalledOnce();
+    expect(mockUpsert).toHaveBeenCalledOnce();
 
     // Invalidate.
     invalidateSessionProfileCacheByEmail(testUser.email);
 
     // Next call should hit DB again.
     await customSessionCapture.fn!({ session: testSession, user: testUser });
-    expect(mockFindUnique).toHaveBeenCalledTimes(2);
+    expect(mockUpsert).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns null (without caching) when DB throws", async () => {
+    const errorUser = { ...testUser, email: "error@example.com" };
+    mockUpsert.mockRejectedValue(new Error("DB connection failed"));
+
+    const result = await customSessionCapture.fn!({ session: testSession, user: errorUser }) as {
+      profile: unknown;
+    };
+
+    expect(result.profile).toBeNull();
+  });
+
+  it("retries DB on next call after an error (error result is not cached)", async () => {
+    const errorUser = { ...testUser, email: "error@example.com" };
+    mockUpsert.mockRejectedValueOnce(new Error("transient error"));
+    mockUpsert.mockResolvedValueOnce(testProfile);
+
+    // First call — DB error → null, should not be cached.
+    const first = await customSessionCapture.fn!({ session: testSession, user: errorUser }) as { profile: unknown };
+    expect(first.profile).toBeNull();
+
+    // Second call — DB succeeds; error was not cached so DB is hit again.
+    const second = await customSessionCapture.fn!({ session: testSession, user: errorUser }) as { profile: unknown };
+    expect(second.profile).toEqual(testProfile);
+    expect(mockUpsert).toHaveBeenCalledTimes(2);
   });
 
 });
-
-
