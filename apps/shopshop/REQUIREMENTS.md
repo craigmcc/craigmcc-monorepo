@@ -1,5 +1,10 @@
 # ShopShop Requirements
 
+## Related Docs
+
+- `apps/shopshop/TECH_STACK.md` — runtime, dependencies, and implementation constraints.
+- `apps/shopshop/ARCHITECTURE.md` — server boundaries, authz policy, and operation design.
+
 ## Overview
 
 ShopShop is a collaborative shopping-list web application inspired by (but simpler than)
