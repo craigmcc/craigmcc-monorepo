@@ -9,28 +9,21 @@
 import { Button } from "@repo/daisy-ui/Button";
 import { Menu } from "@repo/daisy-ui/Menu";
 import { Navbar } from "@repo/daisy-ui/Navbar";
-import { clientLogger as logger } from "@repo/shared-utils";
+//import { clientLogger as logger } from "@repo/shared-utils";
 import { List } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 // Internal Imports ----------------------------------------------------------
 
-import { useSession } from "@/auth/auth-client";
 import { ThemeChanger } from "@/components/layout/ThemeChanger";
+import { useProfile } from "@/lib/ProfileHelper";
 
 // Public Objects ------------------------------------------------------------
 
 export function NavBar() {
 
-const { data: session } = useSession();
-logger.info({
-  "context": "NavBar",
-  "message": "Session data",
-  session,
-  profile: session?.profile,
-})
-const profile = session?.profile;
+  const profile = useProfile();
 
   return (
     <Navbar>
