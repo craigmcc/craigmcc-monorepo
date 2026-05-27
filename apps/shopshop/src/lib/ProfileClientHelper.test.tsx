@@ -11,11 +11,11 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   setProfile,
   useProfile,
-} from "@/lib/ProfileHelper";
+} from "@/lib/ProfileClientHelper";
 
 // Public Objects ------------------------------------------------------------
 
-describe("ProfileHelper", () => {
+describe("ProfileClientHelper", () => {
   const overrideProfile = {
     createdAt: new Date("2026-01-02T00:00:00.000Z"),
     email: "override@example.com",
@@ -37,7 +37,3 @@ describe("ProfileHelper", () => {
     expect(profile).toEqual(overrideProfile);
   });
 });
-
-
-
-

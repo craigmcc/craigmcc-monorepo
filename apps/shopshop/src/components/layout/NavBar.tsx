@@ -17,7 +17,7 @@ import { usePathname } from "next/navigation";
 // Internal Imports ----------------------------------------------------------
 
 import { ThemeChanger } from "@/components/layout/ThemeChanger";
-import { useProfile } from "@/lib/ProfileHelper";
+import { useProfile } from "@/lib/ProfileClientHelper";
 
 // Public Objects ------------------------------------------------------------
 
