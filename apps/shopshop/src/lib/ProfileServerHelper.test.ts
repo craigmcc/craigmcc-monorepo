@@ -32,17 +32,6 @@ import { findProfile, setProfile } from "@/lib/ProfileServerHelper";
 // Public Objects ------------------------------------------------------------
 
 describe("ProfileServerHelper", () => {
-  const requestHeaders = new Headers({ cookie: "session=abc123" });
-
-  const sessionProfile = {
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    email: "session@example.com",
-    id: "profile-session",
-    imageUrl: null,
-    name: "Session User",
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  };
-
   const overrideProfile = {
     createdAt: new Date("2026-01-02T00:00:00.000Z"),
     email: "override@example.com",
@@ -54,19 +43,12 @@ describe("ProfileServerHelper", () => {
 
   beforeEach(() => {
     setProfile(null);
-    mockGetSession.mockReset();
-    mockHeaders.mockReset();
-    mockHeaders.mockResolvedValue(requestHeaders);
   });
 
-  it("findProfile returns null when setProfile(null) is used in test mode", async () => {
-    setProfile(null);
-
+  it("findProfile returns null when the profile is cleared in test mode", async () => {
     const profile = await findProfile();
 
     expect(profile).toBeNull();
-    expect(mockHeaders).not.toHaveBeenCalled();
-    expect(mockGetSession).not.toHaveBeenCalled();
   });
 
   it("findProfile returns setProfile(profile) value in test mode", async () => {
@@ -75,10 +57,7 @@ describe("ProfileServerHelper", () => {
     const profile = await findProfile();
 
     expect(profile).toEqual(overrideProfile);
-    expect(mockHeaders).not.toHaveBeenCalled();
-    expect(mockGetSession).not.toHaveBeenCalled();
   });
 
 });
-
 

@@ -1,5 +1,5 @@
 /**
- * Helpers for reading the authenticated Profile in server-side code.
+ * Helpers for reading the authenticated profile in server-side code.
  */
 
 // External Imports ----------------------------------------------------------
@@ -27,7 +27,7 @@ export async function findProfile(): Promise<Profile | null> {
 }
 
 /**
- * Set the profile value used by findProfile during tests.
+ * Set the profile value used by `findProfile` during tests.
  */
 export function setProfile(profile: Profile | null): void {
   if (!isTestMode()) {

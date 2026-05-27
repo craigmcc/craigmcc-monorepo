@@ -1,29 +1,17 @@
 /**
- * Better-Auth server side configuration.
+ * Better-Auth server-side configuration.
  */
 
-// External Modules ----------------------------------------------------------
+// External Imports ----------------------------------------------------------
 
-import { dbShopShop, Profile } from "@repo/db-shopshop"
+import { dbShopShop, Profile } from "@repo/db-shopshop";
 import { serverLogger as logger } from "@repo/shared-utils";
 import { betterAuth } from "better-auth";
 import type { Auth, BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { customSession } from "better-auth/plugins";
 
-// Internal Modules ---------------------------------------------------------
-
-
 // Public Objects -----------------------------------------------------------
-
-type SessionProfileCacheEntry = {
-  expiresAt: number;
-  profile: Profile | null;
-};
-
-const PROFILE_CACHE_TTL_MS = 60_000;
-const MAX_PROFILE_CACHE_ENTRIES = 5_000;
-const sessionProfileCache = new Map<string, SessionProfileCacheEntry>();
 
 export function invalidateSessionProfileCacheByEmail(email: string): void {
   const cacheKey = makeSessionProfileCacheKey(email);
@@ -52,9 +40,7 @@ const authOptions: AuthOptions = {
   database: prismaAdapter(dbShopShop, {
     provider: "postgresql",
   }),
-  plugins: [
-    customSessionPlugin,
-  ],
+  plugins: [customSessionPlugin],
   emailAndPassword: {
     enabled: true,
   },
@@ -64,10 +50,19 @@ export const auth: Auth<AuthOptions> = betterAuth(authOptions);
 
 // Private Objects -----------------------------------------------------------
 
+type SessionProfileCacheEntry = {
+  expiresAt: number;
+  profile: Profile | null;
+};
+
+const MAX_PROFILE_CACHE_ENTRIES = 5_000;
+const PROFILE_CACHE_TTL_MS = 60_000;
+const sessionProfileCache = new Map<string, SessionProfileCacheEntry>();
+
 /**
  * Look up the user's Profile, creating it if it doesn't exist yet.
  * Results are cached per email for PROFILE_CACHE_TTL_MS to avoid a DB hit
- * on every getSession call.  Errors are NOT cached so transient failures
+ * on every getSession call. Errors are not cached, so transient failures
  * are automatically retried on the next request.
  */
 async function getOrCreateCachedSessionProfile(email: string, name: string): Promise<Profile | null> {
@@ -84,10 +79,10 @@ async function getOrCreateCachedSessionProfile(email: string, name: string): Pro
   }
 
   try {
-    // upsert: return the existing profile unchanged, or create one on first login.
+    // Return the existing profile unchanged, or create one on first login.
     const profile = await dbShopShop.profile.upsert({
       where: { email },
-      update: {},             // Never overwrite profile data from session
+      update: {}, // Never overwrite profile data from session.
       create: { email, name },
     });
 
@@ -102,7 +97,7 @@ async function getOrCreateCachedSessionProfile(email: string, name: string): Pro
 
   } catch (error) {
     logger.error({ context: "getOrCreateCachedSessionProfile", error, email });
-    return null; // Don't cache errors — allow retry on next getSession call
+    return null; // Don't cache errors; allow retry on the next getSession call.
   }
 }
 
@@ -123,4 +118,3 @@ function ensureSessionProfileCacheCapacity(): void {
     sessionProfileCache.delete(oldestKey);
   }
 }
-

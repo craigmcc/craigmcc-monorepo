@@ -1,20 +1,27 @@
 /**
- * Better-Auth client side configuration.
+ * Better-Auth client-side configuration.
  */
 
-// External Modules ----------------------------------------------------------
+// External Imports ----------------------------------------------------------
 
 import { customSessionClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
+
+// Internal Imports ----------------------------------------------------------
+
 import type { auth } from "@/auth/auth-server";
 
-// Public Objects -----------------------------------------------------------
+// Private Objects -----------------------------------------------------------
+
+type AuthClientPlugin = ReturnType<typeof customSessionClient<typeof auth>>;
 
 type AuthClientOptions = {
   basePath: string;
   baseURL: string;
-  plugins: [ReturnType<typeof customSessionClient<typeof auth>>];
+  plugins: [AuthClientPlugin];
 };
+
+type AuthClientType = ReturnType<typeof createAuthClient<AuthClientOptions>>;
 
 const authClientOptions: AuthClientOptions = {
   baseURL: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
@@ -24,13 +31,10 @@ const authClientOptions: AuthClientOptions = {
   ],
 };
 
-type AuthClientType = ReturnType<typeof createAuthClient<AuthClientOptions>>;
-
 const authClient: AuthClientType = createAuthClient(authClientOptions);
 
-// Public Exports ------------------------------------------------------------
+// Public Objects ------------------------------------------------------------
 
-// Convenience exports for components/hooks.
 export const getSession: AuthClientType["getSession"] = authClient.getSession;
 export const signIn: AuthClientType["signIn"] = authClient.signIn;
 export const signOut: AuthClientType["signOut"] = authClient.signOut;

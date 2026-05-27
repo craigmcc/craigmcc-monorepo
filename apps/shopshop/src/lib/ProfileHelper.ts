@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Helpers for reading the authenticated Profile in client-side code.
+ * Helpers for reading the authenticated profile in client-side code.
  */
 
 // External Imports ----------------------------------------------------------
@@ -15,7 +15,7 @@ import { useSession } from "@/auth/auth-client";
 // Public Objects ------------------------------------------------------------
 
 /**
- * Set the profile value used by useProfile during tests.
+ * Set the profile value used by `useProfile` during tests.
  */
 export function setProfile(profile: Profile | null): void {
   if (!isTestMode()) {
@@ -25,14 +25,14 @@ export function setProfile(profile: Profile | null): void {
 }
 
 /**
- * Render-time profile lookup for React client components.
+ * Client-side profile lookup for React components.
  */
 export function useProfile(): Profile | null {
   if (isTestMode()) {
     return testProfile;
   }
 
-  const { data: session } = useSession();
+  const { data: session } = sessionReader();
   return session?.profile ?? null;
 }
 
@@ -40,8 +40,14 @@ export function useProfile(): Profile | null {
 
 let testProfile: Profile | null = null;
 
+const sessionReader = isTestMode() ? readTestSession : useSession;
+
 function isTestMode(): boolean {
   return process.env.NODE_ENV === "test" || process.env.VITEST === "true";
+}
+
+function readTestSession() {
+  return { data: undefined };
 }
 
 

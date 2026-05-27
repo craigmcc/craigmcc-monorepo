@@ -2,15 +2,26 @@
  * Tests for auth-server utilities.
  */
 
-// External Modules ----------------------------------------------------------
+// External Imports ----------------------------------------------------------
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Modules --------------------------------------------------------------
 
 // Capture the customSession callback so we can invoke it directly in tests.
+type CustomSessionContext = {
+  session: unknown;
+  user: { email: string; name: string };
+};
+
+type CustomSessionResult = {
+  profile: unknown;
+  session: unknown;
+  user: unknown;
+};
+
 const customSessionCapture = vi.hoisted(() => ({
-  fn: null as ((ctx: { session: unknown; user: { email: string; name: string } }) => Promise<unknown>) | null,
+  fn: null as ((ctx: CustomSessionContext) => Promise<CustomSessionResult>) | null,
 }));
 
 vi.mock("@repo/db-shopshop", () => ({
@@ -35,7 +46,7 @@ vi.mock("better-auth/adapters/prisma", () => ({
 
 vi.mock("better-auth/plugins", () => ({
   customSession: vi.fn(
-    (fn: (ctx: { session: unknown; user: { email: string; name: string } }) => Promise<unknown>) => {
+    (fn: (ctx: CustomSessionContext) => Promise<CustomSessionResult>) => {
       customSessionCapture.fn = fn;
       return { id: "custom-session" };
     }
@@ -50,7 +61,7 @@ vi.mock("@repo/shared-utils", () => ({
   },
 }));
 
-// Internal Modules ----------------------------------------------------------
+// Internal Imports ----------------------------------------------------------
 
 import { dbShopShop } from "@repo/db-shopshop";
 import { invalidateSessionProfileCacheByEmail } from "./auth-server";
@@ -101,7 +112,7 @@ describe("invalidateSessionProfileCacheByEmail", () => {
 
 });
 
-describe("customSession callback (getOrCreateCachedSessionProfile)", () => {
+describe("customSession profile caching", () => {
 
   const mockUpsert = vi.mocked(dbShopShop.profile.upsert);
 
@@ -124,9 +135,7 @@ describe("customSession callback (getOrCreateCachedSessionProfile)", () => {
   it("returns profile from DB on cache miss", async () => {
     mockUpsert.mockResolvedValue(testProfile);
 
-    const result = await customSessionCapture.fn!({ session: testSession, user: testUser }) as {
-      profile: unknown;
-    };
+    const result = await customSessionCapture.fn!({ session: testSession, user: testUser });
 
     expect(result.profile).toEqual(testProfile);
     expect(mockUpsert).toHaveBeenCalledOnce();
@@ -147,11 +156,7 @@ describe("customSession callback (getOrCreateCachedSessionProfile)", () => {
   it("returns session and user alongside profile", async () => {
     mockUpsert.mockResolvedValue(testProfile);
 
-    const result = await customSessionCapture.fn!({ session: testSession, user: testUser }) as {
-      session: unknown;
-      user: unknown;
-      profile: unknown;
-    };
+    const result = await customSessionCapture.fn!({ session: testSession, user: testUser });
 
     expect(result.session).toBe(testSession);
     expect(result.user).toBe(testUser);
@@ -203,9 +208,7 @@ describe("customSession callback (getOrCreateCachedSessionProfile)", () => {
     const errorUser = { ...testUser, email: "error@example.com" };
     mockUpsert.mockRejectedValue(new Error("DB connection failed"));
 
-    const result = await customSessionCapture.fn!({ session: testSession, user: errorUser }) as {
-      profile: unknown;
-    };
+    const result = await customSessionCapture.fn!({ session: testSession, user: errorUser });
 
     expect(result.profile).toBeNull();
   });
@@ -216,11 +219,11 @@ describe("customSession callback (getOrCreateCachedSessionProfile)", () => {
     mockUpsert.mockResolvedValueOnce(testProfile);
 
     // First call — DB error → null, should not be cached.
-    const first = await customSessionCapture.fn!({ session: testSession, user: errorUser }) as { profile: unknown };
+    const first = await customSessionCapture.fn!({ session: testSession, user: errorUser });
     expect(first.profile).toBeNull();
 
     // Second call — DB succeeds; error was not cached so DB is hit again.
-    const second = await customSessionCapture.fn!({ session: testSession, user: errorUser }) as { profile: unknown };
+    const second = await customSessionCapture.fn!({ session: testSession, user: errorUser });
     expect(second.profile).toEqual(testProfile);
     expect(mockUpsert).toHaveBeenCalledTimes(2);
   });
