@@ -36,6 +36,8 @@ type AuthOptions = BetterAuthOptions & {
   plugins: [typeof customSessionPlugin];
 };
 
+const MAX_AGE_FOR_COOKIE_CACHE = 5 * 60; // Five mintes
+
 const authOptions: AuthOptions = {
   database: prismaAdapter(dbShopShop, {
     provider: "postgresql",
@@ -43,6 +45,12 @@ const authOptions: AuthOptions = {
   plugins: [customSessionPlugin],
   emailAndPassword: {
     enabled: true,
+  },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: MAX_AGE_FOR_COOKIE_CACHE,
+    },
   },
 };
 
