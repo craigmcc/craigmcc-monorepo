@@ -36,7 +36,7 @@ type AuthOptions = BetterAuthOptions & {
   plugins: [typeof customSessionPlugin];
 };
 
-const MAX_AGE_FOR_COOKIE_CACHE = 5 * 60; // Five mintes
+const MAX_AGE_FOR_COOKIE_CACHE = 5 * 60; // Five minutes
 
 const authOptions: AuthOptions = {
   database: prismaAdapter(dbShopShop, {
