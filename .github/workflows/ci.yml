@@ -67,7 +67,11 @@ jobs:
           CI: true
         run: pnpm build
 
-      - name: Test
+      - name: Test Setup
+        working-directory: apps/shopshop
         run: |
           echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/shopshop" > .env.test
+
+      - name: Test
+        run: |
           pnpm run test:ci
