@@ -29,6 +29,10 @@ safe to call from any context.
   that the caller has permission to perform the requested action (for example,
   checking that the caller is a `Member` of the `List` that they are
   attempting to modify).
+- Lightweight validation that has no side effects (for example, validating an
+  ID format with Zod) may be performed before authentication/authorization.
+  This ordering is acceptable when it keeps the code simpler and avoids
+  unnecessary database lookups.
 - If the incoming request includes a data model, the mutation function
   **must** validate that data model, using Zod schemas defined in
   the `@repo/db-shopshop` package.

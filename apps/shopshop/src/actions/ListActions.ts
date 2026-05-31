@@ -1,0 +1,195 @@
+/**
+ * Server-side actions that perform mutations on List models.
+ */
+
+// External Imports ----------------------------------------------------------
+
+import {
+  ActionResult,
+  ERRORS,
+  ValidationActionResult,
+} from "@repo/daisy-form/ActionResult";
+import { dbShopShop, List, MemberRole } from "@repo/db-shopshop";
+import { IdSchemaType, IdSchema } from "@repo/db-shopshop/zod-schemas/IdSchema";
+import {
+  ListCreateSchema,
+  ListCreateSchemaType,
+  ListUpdateSchema,
+  ListUpdateSchemaType,
+} from "@repo/db-shopshop/zod-schemas/ListSchema";
+import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
+
+// Internal Imports ----------------------------------------------------------
+
+import { findProfile } from "@/lib/ProfileServerHelper";
+
+// Public Objects ------------------------------------------------------------
+
+export async function createList(data: ListCreateSchemaType): Promise<ActionResult<List>> {
+
+  // AUTHENTICATION - Must be signed in
+  const profile = await findProfile();
+  if (!profile) {
+    return { message: ERRORS.AUTHENTICATION };
+  }
+
+  // AUTHORIZATION - Any signed-in profile can create a list
+
+  // VALIDATION - Validate input content
+  const result = ListCreateSchema.safeParse(data);
+  if (!result.success) {
+    logger.error({
+      context: "ListActions.createList",
+      data,
+      issues: result.error.issues,
+    });
+    return ValidationActionResult<List>(result.error);
+  }
+
+  // MUTATION - Create the list and the creator's ADMIN membership atomically
+  const createdList = await dbShopShop.list.create({
+    data: {
+      ...result.data,
+      members: {
+        create: {
+          profileId: profile.id,
+          role: MemberRole.ADMIN,
+        },
+      },
+    },
+  });
+
+  logger.info({
+    context: "ListActions.createList",
+    listId: createdList.id,
+    profileId: profile.id,
+  });
+
+  return { model: createdList };
+
+}
+
+export async function deleteList(listId: IdSchemaType): Promise<ActionResult<List>> {
+
+  // VALIDATION - Validate list ID
+  const validatedListId = IdSchema.safeParse(listId);
+  if (!validatedListId.success) {
+    logger.error({
+      context: "ListActions.deleteList",
+      issues: validatedListId.error.issues,
+      listId,
+    });
+    return { message: ERRORS.ID_VALIDATION };
+  }
+
+  // AUTHENTICATION - Must be signed in
+  const profile = await findProfile();
+  if (!profile) {
+    return { message: ERRORS.AUTHENTICATION };
+  }
+
+  // AUTHORIZATION - Must be an ADMIN member of this list
+  const member = await findAdminMembership(validatedListId.data, profile.id);
+  if (!member) {
+    logger.warn({
+      context: "ListActions.deleteList",
+      listId: validatedListId.data,
+      profileId: profile.id,
+      message: "Unauthorized list deletion attempt",
+    });
+    return { message: NOT_AUTHORIZED_MESSAGE };
+  }
+
+  // MUTATION - Delete the list (Members/Categories/Items cascade via schema)
+  const deletedList = await dbShopShop.list.delete({
+    where: {
+      id: validatedListId.data,
+    },
+  });
+
+  logger.info({
+    context: "ListActions.deleteList",
+    listId: deletedList.id,
+    profileId: profile.id,
+  });
+
+  return { model: deletedList };
+
+}
+
+export async function updateList(listId: IdSchemaType, data: ListUpdateSchemaType): Promise<ActionResult<List>> {
+
+  // VALIDATION - Validate list ID
+  const validatedListId = IdSchema.safeParse(listId);
+  if (!validatedListId.success) {
+    logger.error({
+      context: "ListActions.updateList",
+      issues: validatedListId.error.issues,
+      listId,
+    });
+    return { message: ERRORS.ID_VALIDATION };
+  }
+
+  // AUTHENTICATION - Must be signed in
+  const profile = await findProfile();
+  if (!profile) {
+    return { message: ERRORS.AUTHENTICATION };
+  }
+
+  // AUTHORIZATION - Must be an ADMIN member of this list
+  const member = await findAdminMembership(validatedListId.data, profile.id);
+  if (!member) {
+    logger.warn({
+      context: "ListActions.updateList",
+      listId: validatedListId.data,
+      profileId: profile.id,
+      message: "Unauthorized list update attempt",
+    });
+    return { message: NOT_AUTHORIZED_MESSAGE };
+  }
+
+  // VALIDATION - Validate input content
+  const result = ListUpdateSchema.safeParse(data);
+  if (!result.success) {
+    logger.error({
+      context: "ListActions.updateList",
+      data,
+      issues: result.error.issues,
+      listId: validatedListId.data,
+      profileId: profile.id,
+    });
+    return ValidationActionResult<List>(result.error);
+  }
+
+  // MUTATION - Update list properties
+  const updatedList = await dbShopShop.list.update({
+    data: result.data,
+    where: {
+      id: validatedListId.data,
+    },
+  });
+
+  logger.info({
+    context: "ListActions.updateList",
+    listId: updatedList.id,
+    profileId: profile.id,
+  });
+
+  return { model: updatedList };
+
+}
+
+// Private Objects -----------------------------------------------------------
+
+const NOT_AUTHORIZED_MESSAGE = "This Profile is not authorized to perform this action";
+
+async function findAdminMembership(listId: string, profileId: string) {
+  return dbShopShop.member.findFirst({
+    where: {
+      listId,
+      profileId,
+      role: MemberRole.ADMIN,
+    },
+  });
+}
+

@@ -19,5 +19,6 @@ export default defineConfig({
   test: {
     ...(baseTest || {}),
     include: ["src/**/*.test.{ts,tsx}"],
+    fileParallelism: false,
   },
 });
