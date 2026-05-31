@@ -4,6 +4,8 @@
 
 // External Imports ----------------------------------------------------------
 
+import { describe, expect, it } from "vitest";
+
 // Internal Imports ----------------------------------------------------------
 
 import {
