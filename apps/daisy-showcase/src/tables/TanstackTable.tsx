@@ -22,7 +22,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Package, Paperclip, Pencil } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -37,7 +37,6 @@ export type TanstackTableProps = {
 
 export function TanstackTable({ users }: TanstackTableProps) {
 
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [emailFilter, setEmailFilter] = useState<string>("");
   const [nameFilter, setNameFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
@@ -49,34 +48,19 @@ export function TanstackTable({ users }: TanstackTableProps) {
     {id: "id", desc: false},
   ]);
 
-  // Apply selection filters whenever they change
-  useEffect(() => {
-
+  // Derive column filters directly from the individual filter values
+  const columnFilters = useMemo<ColumnFiltersState>(() => {
     const filters: ColumnFiltersState = [];
-
     if (emailFilter.length > 0) {
-      filters.push({
-        id: "email",
-        value: emailFilter,
-      });
+      filters.push({ id: "email", value: emailFilter });
     }
-
     if (nameFilter.length > 0) {
-      filters.push({
-        id: "name",
-        value: nameFilter,
-      });
+      filters.push({ id: "name", value: nameFilter });
     }
-
     if (phoneFilter.length > 0) {
-      filters.push({
-        id: "phone",
-        value: phoneFilter,
-      });
+      filters.push({ id: "phone", value: phoneFilter });
     }
-
-    setColumnFilters(filters);
-
+    return filters;
   }, [emailFilter, nameFilter, phoneFilter]);
 
   const columns = useMemo(() => [
@@ -109,7 +93,6 @@ export function TanstackTable({ users }: TanstackTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     state: {
