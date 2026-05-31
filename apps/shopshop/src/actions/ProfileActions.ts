@@ -50,6 +50,22 @@ export async function updateProfile(data: ProfileUpdateSchemaType): Promise<Acti
     return ValidationActionResult<Profile>(result.error);
   }
 
+  // VALIDATION - Check for uniqueness constraint violation
+  if (data.email) {
+    const existing = await dbShopShop.profile.findUnique({
+      where: {
+        email: data.email,
+        NOT: {
+          id: profile.id,
+        }
+      },
+    });
+    if (existing) {
+      return ({ message: "That email address is already in use" });
+    }
+  }
+
+
 // MUTATION - Update the Profile and the corresponding User
   const updated = await dbShopShop.profile.update({
     data,

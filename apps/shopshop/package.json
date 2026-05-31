@@ -48,10 +48,8 @@
     "dev": "next dev --turbopack --port 3000",
     "lint": "eslint .",
     "start": "next start --port 3000",
-    "test": "vitest",
-    "test:ci": "vitest --run --coverage --passWithNoTests",
-    "test:ci:test": "dotenvx run -f .env.test -- vitest --run --coverage --passWithNoTests",
-    "test:test": "dotenvx run -f .env.test -- vitest"
+    "test": "dotenvx run -f .env.test -- vitest",
+    "test:ci": "dotenvx run -f .env.test -- vitest --run --coverage --passWithNoTests"
   },
   "type": "module",
   "version": "0.1.0"

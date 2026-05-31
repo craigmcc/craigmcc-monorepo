@@ -1,5 +1,5 @@
 /**
- * Utilities supporting functional tests of {Action} classes.
+ * Utilities supporting functional tests of {Model}Action classes.
  */
 
 // External Modules ----------------------------------------------------------
@@ -9,33 +9,13 @@ import {dbShopShop as db, Category, Item, List, MemberRole, Profile} from "@repo
 // Internal Modules ----------------------------------------------------------
 
 import { NotFoundError } from "@/lib/ErrorHelpers";
-import { BaseUtils/*, OPTIONS*/ } from "@/test/BaseUtils";
+import { BaseUtils } from "@/test/BaseUtils";
 
 // Public Objects -----------------------------------------------------------
 
 export class ActionUtils extends BaseUtils {
 
   // Public Members --------------------------------------------------------
-
-  /**
-   * Look up and return the Categories for the specified List.
-   *
-   * @param list                        List for which the Categories are requested
-   *
-   * @returns                          The requested Categories
-   */
-/*
-  public async lookupCategories(list: List): Promise<Category[]> {
-    return await db.category.findMany({
-      orderBy: {
-        name: "asc",
-      },
-      where: {
-        listId: list.id,
-      },
-    });
-  }
-*/
 
   /**
    * Look up and return the Category from the database with the specified id.
@@ -65,6 +45,10 @@ export class ActionUtils extends BaseUtils {
    *
    * @param list                        List for which the Category is requested
    * @param name                        Name of the Category that is requested
+   *
+   * @returns                           The requested Category
+   *
+   * @throws NotFoundError              If no such Category exists
    */
   public async lookupCategoryByName(list: List, name: string): Promise<Category> {
     const category = await db.category.findFirst({
@@ -80,7 +64,8 @@ export class ActionUtils extends BaseUtils {
   }
 
   /**
-   * Look up and return the Category from the database.
+   * Look up and return the Category from the database based on the requested role
+   * that the Profile must have.
    *
    * @param profile                     Profile that is signed in
    * @param role                        Role that the Profile must have in the List (or null)
@@ -175,7 +160,7 @@ export class ActionUtils extends BaseUtils {
   }
 
   /**
-   * Look up and return the Item from the database.
+   * Look up and return the Item from the database by the role the Profile must have.
    *
    * @param profile                     Profile that is signed in
    * @param role                        Role that the Profile must have in the List (or null)
@@ -234,9 +219,8 @@ export class ActionUtils extends BaseUtils {
    *
    * @returns                          The requested Items
    */
-/*
   public async lookupItems(category: Category): Promise<Item[]> {
-    return await db.item.findMany({
+    return db.item.findMany({
       orderBy: {
         name: "asc",
       },
@@ -245,12 +229,11 @@ export class ActionUtils extends BaseUtils {
       },
     });
   }
-*/
 
   /**
    * Look up and return the List from the database.
    *
-   * @param name                        Name of the requested List
+   * @param listId                      ID of the requested List
    *
    * @returns                           The requested List
    *
@@ -337,7 +320,7 @@ export class ActionUtils extends BaseUtils {
   }
 
   /**
-   * Look up and return the Profile from the database.
+   * Look up and return the Profile from the database by email address.
    *
    * @param email                       Email address of the requested Profile
    *
@@ -345,7 +328,7 @@ export class ActionUtils extends BaseUtils {
    *
    * @throws NotFoundError              If no such Profile exists
    */
-  public async lookupProfile(email: string): Promise<Profile> {
+  public async lookupProfileByEmail(email: string): Promise<Profile> {
     const profile = await db.profile.findUnique({
       where: {
         email,

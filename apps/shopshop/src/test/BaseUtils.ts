@@ -41,17 +41,26 @@ export abstract class BaseUtils {
     await db.list.deleteMany();
     await db.member.deleteMany();
     await db.profile.deleteMany();
+    await db.user.deleteMany();
 
     // Load Profiles if requested
     const profiles: Profile[] = [];
     if (options.withProfiles) {
       for (const profile of SeedData.PROFILES) {
+        // Generate the Profile model
         profiles.push(await db.profile.create({
           data: {
             email: profile.email!,
             name: profile.name!,
           }
         }));
+        // Generate the corresponding better-auth User model
+        await db.user.create({
+          data: {
+            email: profile.email!,
+            name: profile.name!,
+          }
+        });
       }
     }
 
