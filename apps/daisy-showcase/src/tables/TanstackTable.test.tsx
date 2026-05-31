@@ -1,5 +1,5 @@
 import { renderWithProviders } from "@repo/testing-react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import users from "@/data/users.json";
 
@@ -20,6 +20,10 @@ function getFirstRowName(container: HTMLElement) {
 }
 
 describe("TanstackTable", () => {
+  beforeEach(() => {
+    window.history.replaceState(null, "", "/");
+  });
+
   it("renders filter inputs and first-page rows", () => {
     const { getByLabelText, getByText, queryByText } = renderWithProviders(
       <TanstackTable users={users} />
@@ -114,5 +118,3 @@ describe("TanstackTable", () => {
     });
   });
 });
-
-
