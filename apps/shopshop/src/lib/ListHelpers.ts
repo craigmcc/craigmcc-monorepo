@@ -1,12 +1,12 @@
 // NOTE: *Not* a "use server" file to prevent methods from being server actions
 
 /**
- * Create the Category and Item models for a new List.
+ * Helpers for looking up and populating List-related models.
  */
 
 // External Modules ----------------------------------------------------------
 
-import { dbShopShop as db, Category, Item } from "@repo/db-shopshop";
+import { dbShopShop as db, Category, Item, List, Member, MemberRole, Profile } from "@repo/db-shopshop";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -15,6 +15,70 @@ import { type CategoryCreateSchemaType } from "@repo/db-shopshop/zod-schemas/Cat
 import { type ItemCreateSchemaType } from "@repo/db-shopshop/zod-schemas/ItemSchema";
 
 // Public Objects ------------------------------------------------------------
+
+/**
+ * Look up and return the first List with the specified id.
+ */
+export async function lookupListById(listId: string): Promise<List | null> {
+  return db.list.findUnique({
+    where: {
+      id: listId,
+    },
+  });
+}
+
+/**
+ * Look up and return the first List with the specified name.
+ */
+export async function lookupListByName(name: string): Promise<List | null> {
+  return db.list.findFirst({
+    where: {
+      name,
+    },
+  });
+}
+
+/**
+ * Look up and return the first List for which the specified Profile is a
+ * Member with the specified Role (or not a Member if role is null).
+ */
+export async function lookupListByRole(profile: Profile, role: MemberRole | null): Promise<List | null> {
+  if (role) {
+    return db.list.findFirst({
+      where: {
+        members: {
+          some: {
+            profileId: profile.id,
+            role,
+          },
+        },
+      },
+    });
+  }
+
+  return db.list.findFirst({
+    where: {
+      members: {
+        none: {
+          profileId: profile.id,
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Look up and return the Member relationship between the specified List and
+ * Profile.
+ */
+export async function lookupListMembership(listId: string, profileId: string): Promise<Member | null> {
+  return db.member.findFirst({
+    where: {
+      listId,
+      profileId,
+    },
+  });
+}
 
 /**
  * Populate the Category and Item models for a new List.

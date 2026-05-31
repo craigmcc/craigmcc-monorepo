@@ -15,12 +15,14 @@ import { beforeEach, describe, expect, it } from "vitest";
 // Internal Imports ----------------------------------------------------------
 
 import { createList, deleteList, updateList } from "@/actions/ListActions";
+import { lookupListByRole } from "@/lib/ListHelpers";
+import { lookupProfileByEmail } from "@/lib/ProfileHelpers";
 import { setProfile } from "@/lib/ProfileServerHelper";
-import { ActionUtils } from "@/test/ActionUtils";
+import { BaseUtils } from "@/test/BaseUtils";
 import { PROFILES } from "@/test/SeedData";
 
 const NOT_AUTHORIZED_MESSAGE = "This Profile is not authorized to perform this action";
-const UTILS = new ActionUtils();
+const UTILS = new BaseUtils();
 
 // Test Specifications -------------------------------------------------------
 
@@ -56,7 +58,7 @@ describe("ListActions", () => {
 
     it("should fail on invalid list data", async () => {
 
-      const profile = await UTILS.lookupProfileByEmail(PROFILES[0]!.email!);
+      const profile = await lookupProfileByEmail(PROFILES[0]!.email!);
       setProfile(profile);
       const data: ListCreateSchemaType = {
         name: "",
@@ -71,7 +73,7 @@ describe("ListActions", () => {
 
     it("should create a list and an ADMIN member for the creator", async () => {
 
-      const profile = await UTILS.lookupProfileByEmail(PROFILES[0]!.email!);
+      const profile = await lookupProfileByEmail(PROFILES[0]!.email!);
       setProfile(profile);
       const data: ListCreateSchemaType = {
         imageUrl: "https://example.com/list.png",
@@ -112,8 +114,8 @@ describe("ListActions", () => {
 
     it("should fail on unauthenticated user", async () => {
 
-      const adminProfile = await UTILS.lookupProfileByEmail(PROFILES[0]!.email!);
-      const list = await UTILS.lookupListByRole(adminProfile, MemberRole.ADMIN);
+      const adminProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const list = await lookupListByRole(adminProfile!, MemberRole.ADMIN);
 
       const result = await updateList(list.id, {
         name: "Renamed",
@@ -126,8 +128,8 @@ describe("ListActions", () => {
 
     it("should fail on unauthorized user", async () => {
 
-      const guestProfile = await UTILS.lookupProfileByEmail(PROFILES[0]!.email!);
-      const guestList = await UTILS.lookupListByRole(guestProfile, MemberRole.GUEST);
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestList = await lookupListByRole(guestProfile!, MemberRole.GUEST);
       setProfile(guestProfile);
 
       const result = await updateList(guestList.id, {
@@ -141,8 +143,8 @@ describe("ListActions", () => {
 
     it("should fail on invalid update data", async () => {
 
-      const adminProfile = await UTILS.lookupProfileByEmail(PROFILES[1]!.email!);
-      const list = await UTILS.lookupListByRole(adminProfile, MemberRole.ADMIN);
+      const adminProfile = await lookupProfileByEmail(PROFILES[1]!.email!);
+      const list = await lookupListByRole(adminProfile!, MemberRole.ADMIN);
       setProfile(adminProfile);
       const data: ListUpdateSchemaType = {
         name: "",
@@ -157,8 +159,8 @@ describe("ListActions", () => {
 
     it("should update a list for an ADMIN member", async () => {
 
-      const adminProfile = await UTILS.lookupProfileByEmail(PROFILES[1]!.email!);
-      const list = await UTILS.lookupListByRole(adminProfile, MemberRole.ADMIN);
+      const adminProfile = await lookupProfileByEmail(PROFILES[1]!.email!);
+      const list = await lookupListByRole(adminProfile!, MemberRole.ADMIN);
       setProfile(adminProfile);
       const data: ListUpdateSchemaType = {
         imageUrl: "https://example.com/new-list.png",
@@ -191,8 +193,8 @@ describe("ListActions", () => {
 
     it("should fail on unauthenticated user", async () => {
 
-      const adminProfile = await UTILS.lookupProfileByEmail(PROFILES[1]!.email!);
-      const list = await UTILS.lookupListByRole(adminProfile, MemberRole.ADMIN);
+      const adminProfile = await lookupProfileByEmail(PROFILES[1]!.email!);
+      const list = await lookupListByRole(adminProfile!, MemberRole.ADMIN);
 
       const result = await deleteList(list.id);
 
@@ -203,8 +205,8 @@ describe("ListActions", () => {
 
     it("should fail on unauthorized user", async () => {
 
-      const guestProfile = await UTILS.lookupProfileByEmail(PROFILES[0]!.email!);
-      const list = await UTILS.lookupListByRole(guestProfile, MemberRole.GUEST);
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const list = await lookupListByRole(guestProfile!, MemberRole.GUEST);
       setProfile(guestProfile);
 
       const result = await deleteList(list.id);
@@ -216,8 +218,8 @@ describe("ListActions", () => {
 
     it("should delete a list and all corresponding members for an ADMIN", async () => {
 
-      const adminProfile = await UTILS.lookupProfileByEmail(PROFILES[1]!.email!);
-      const list = await UTILS.lookupListByRole(adminProfile, MemberRole.ADMIN);
+      const adminProfile = await lookupProfileByEmail(PROFILES[1]!.email!);
+      const list = await lookupListByRole(adminProfile!, MemberRole.ADMIN);
       setProfile(adminProfile);
 
       const countBefore = await db.member.count({

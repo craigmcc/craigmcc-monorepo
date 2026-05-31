@@ -25,7 +25,7 @@ export type OPTIONS = {
 /**
  * Base utilities for functional tests.
  */
-export abstract class BaseUtils {
+export class BaseUtils {
 
   /**
    * Erase current database, then load seed data for the models selected

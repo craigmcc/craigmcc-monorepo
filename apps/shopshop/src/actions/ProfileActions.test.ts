@@ -11,11 +11,12 @@ import { beforeEach, describe, expect, it, /*vi*/ } from "vitest";
 // Internal Imports ----------------------------------------------------------
 
 import { updateProfile } from "@/actions/ProfileActions";
+import { lookupProfileByEmail } from "@/lib/ProfileHelpers";
 import { setProfile } from "@/lib/ProfileServerHelper";
-import { ActionUtils } from "@/test/ActionUtils";
+import { BaseUtils } from "@/test/BaseUtils";
 import { PROFILES } from "@/test/SeedData";
 
-const UTILS = new ActionUtils();
+const UTILS = new BaseUtils();
 
 // Test Specifications -------------------------------------------------------
 
@@ -35,7 +36,7 @@ describe("ProfileActions", () => {
 
     it("should fail on duplicate email", async () => {
 
-      const profile = await UTILS.lookupProfileByEmail(PROFILES[0]!.email!);
+      const profile = await lookupProfileByEmail(PROFILES[0]!.email!);
       setProfile(profile);
       const update: ProfileUpdateSchemaType = {
         email: PROFILES[1]!.email!,
@@ -60,7 +61,7 @@ describe("ProfileActions", () => {
 
     it("should pass on empty update", async () => {
 
-      const profile = await UTILS.lookupProfileByEmail(PROFILES[2]!.email!);
+      const profile = await lookupProfileByEmail(PROFILES[2]!.email!);
       setProfile(profile);
 
       const result = await updateProfile({});
@@ -76,7 +77,7 @@ describe("ProfileActions", () => {
 
   it("should pass on full update to different values", async () => {
 
-    const profile = await UTILS.lookupProfileByEmail(PROFILES[1]!.email!);
+    const profile = await lookupProfileByEmail(PROFILES[1]!.email!);
     setProfile(profile);
     const update: ProfileUpdateSchemaType = {
       email: "New" + profile.email,
@@ -101,7 +102,7 @@ describe("ProfileActions", () => {
 
   it("should pass on full update to same values", async () => {
 
-    const profile = await UTILS.lookupProfileByEmail(PROFILES[2]!.email!);
+    const profile = await lookupProfileByEmail(PROFILES[2]!.email!);
     setProfile(profile);
     const update: ProfileUpdateSchemaType = {
       email: profile.email,
