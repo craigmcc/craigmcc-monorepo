@@ -21,6 +21,7 @@ import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 
 // Internal Imports ----------------------------------------------------------
 
+import { populateList } from "@/lib/ListHelpers";
 import { findProfile } from "@/lib/ProfileServerHelper";
 
 // Public Objects ------------------------------------------------------------
@@ -46,17 +47,23 @@ export async function createList(data: ListCreateSchemaType): Promise<ActionResu
     return ValidationActionResult<List>(result.error);
   }
 
-  // MUTATION - Create the list and the creator's ADMIN membership atomically
-  const createdList = await dbShopShop.list.create({
-    data: {
-      ...result.data,
-      members: {
-        create: {
-          profileId: profile.id,
-          role: MemberRole.ADMIN,
+  // MUTATION - Create the list, the creator's ADMIN membership, and default content atomically
+  const createdList = await dbShopShop.$transaction(async (transaction) => {
+    const list = await transaction.list.create({
+      data: {
+        ...result.data,
+        members: {
+          create: {
+            profileId: profile.id,
+            role: MemberRole.ADMIN,
+          },
         },
       },
-    },
+    });
+
+    await populateList(list.id, true, true, transaction);
+
+    return list;
   });
 
   logger.info({

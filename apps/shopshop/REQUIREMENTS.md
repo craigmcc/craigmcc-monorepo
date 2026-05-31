@@ -66,6 +66,7 @@ while shopping.
 ### Lists
 - As a signed-in user, I can see all lists I am a member of.
 - As a signed-in user, I can create a new list (I become its ADMIN).
+- As a signed-in user, when I create a new list it starts with a default set of categories and starter items.
 - As an ADMIN, I can rename a list.
 - As an ADMIN, I can delete a list (all its categories and items are deleted too).
 - As an ADMIN, I can mark a list as private (non-shareable).

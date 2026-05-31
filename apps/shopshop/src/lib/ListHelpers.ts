@@ -16,6 +16,8 @@ import { type ItemCreateSchemaType } from "@repo/db-shopshop/zod-schemas/ItemSch
 
 // Public Objects ------------------------------------------------------------
 
+type PopulateListClient = Pick<typeof db, "category" | "item">;
+
 /**
  * Look up and return the first List with the specified id.
  */
@@ -89,7 +91,12 @@ export async function lookupListMembership(listId: string, profileId: string): P
  *
  * @returns                             Newly created Categories and Items
  */
-export async function populateList(listId: string, withCategories: boolean, withItems: boolean) {
+export async function populateList(
+  listId: string,
+  withCategories: boolean,
+  withItems: boolean,
+  client: PopulateListClient = db,
+) {
 
   // Create each defined Category
   const categories: Category[] = [];
@@ -99,7 +106,7 @@ export async function populateList(listId: string, withCategories: boolean, with
         listId: listId,
         name: element[0]!,
       }
-      categories.push(await db.category.create({ data: category }));
+      categories.push(await client.category.create({ data: category }));
     }
   }
 
@@ -117,7 +124,7 @@ export async function populateList(listId: string, withCategories: boolean, with
             name: element![j] ?? "Unknown Item",
             selected: false,
           }
-          items.push(await db.item.create({ data: item }));
+          items.push(await client.item.create({ data: item }));
         }
       }
     }
