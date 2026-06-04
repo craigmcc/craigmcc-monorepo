@@ -39,7 +39,13 @@ safe to call from any context.
 - Each mutation function will return an `ActionResult<{Model}>` object.
   If the operation was successful, it returns the mutated `{Model}` object itself.
   If the operation failed, it returns an error message, suitable for return
-  to the caller and ultimately displayed to the user.
+  to the caller and ultimately displayed to the user.  In addition, an
+  appropriate HTTP status code (from the type `ActionResultStatus`)
+  should also be returned.
+- If an action function triggers a thrown error, that error MUST be
+  caught, logged in detail, and an innocuous error message (with
+  a status value of 500) MUST be returned to the caller.  Such errors
+  MUST NOT be allowed to propagate outside the action function itself.
 - In addition, logging (via the `ServerLogger` from `@repo/shared-utils`)
   should be used to record important events and errors.  Because these functions
   are only recorded in server-side logs, and not sent to the client,
@@ -59,6 +65,9 @@ safe to call from any context.
   via the `setTestProfile` function.  This allows tests to easily execute
   authenticated-or-not scenarios without having to involve (or mock)
   better-auth authentication.
+- When testing use cases that should throw errors, also validate that
+  the correct `ActionResultStatus` value is being returned, corresponding
+  to the type of failure that occurred.
 - Modules in the `src/test` folder are solely for use in testing.
   - `SeedData` contains the test data that can be loaded into each table.
     The constants are exported so that tests can refer to them symbolically,

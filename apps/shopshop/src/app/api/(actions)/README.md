@@ -8,8 +8,9 @@ code (e.g. React components) and from mobile applications.
 
 For actions that perform mutations, these endpoints can rely on the fact that the required
 authentication, authorization, and validation checks will occur inside the underlying action
-being called.  If endpoints for fetch operations are added later (not part of the current plan),
-the relevant checks will need to be applied in the route handers themselves.
+being called.  If endpoints for fetch operations are added later (not part of the current plans),
+the relevant checks will need to be applied in the route handlers themselves, because (as server
+side components) the route handlers can execute things like database lookups directly.
 
 ## Development Rules
 
@@ -24,10 +25,9 @@ the relevant checks will need to be applied in the route handers themselves.
 - Path URLs should require a minimum number of path parameters.  For example,
   `PUT /api/profile` works because the signed-in profile will be determined by the
   action being called -- or it will return an error if the caller is not signed in.
-- TODO: Clarify how to determine the appropriate HTTP status code for different types
-  of errors.  This will likely require an optional return value from the action functions
-  to indicate the desired status code, rather than relying on fragile text comparisons
-  of the returned message.
+- If the action method returns a `message` instead of a `model`, it should also
+  return an appropriate HTTP status code that will be sent back to the client.  If
+  no status code is provided, use 400.
 
 ## Testing Rules
 
