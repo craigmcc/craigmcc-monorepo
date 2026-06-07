@@ -1,21 +1,21 @@
 /**
- * Route handler for Profile mutations.
+ * Route handler for Category create mutations.
  */
 
 // External Imports ----------------------------------------------------------
 
-import { ProfileUpdateSchemaType } from "@repo/db-shopshop/zod-schemas/ProfileSchema";
+import { CategoryCreateSchemaType } from "@repo/db-shopshop/zod-schemas/CategorySchema";
 import { NextRequest, NextResponse } from "next/server";
 
 // Internal Imports ----------------------------------------------------------
 
-import { updateProfile } from "@/actions/ProfileActions";
+import { createCategory } from "@/actions/CategoryActions";
 
 // Public Objects ------------------------------------------------------------
 
-export async function PUT(request: NextRequest) {
-  const data: ProfileUpdateSchemaType = await request.json();
-  const result = await updateProfile(data);
+export async function POST(request: NextRequest) {
+  const data: CategoryCreateSchemaType = await request.json();
+  const result = await createCategory(data);
   if (result.model) {
     return NextResponse.json({
       data: result.model,
@@ -33,3 +33,4 @@ export async function PUT(request: NextRequest) {
 }
 
 // Private Objects -----------------------------------------------------------
+
