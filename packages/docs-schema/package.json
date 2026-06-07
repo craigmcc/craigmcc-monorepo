@@ -1,11 +1,16 @@
 {
-  "name": "@repo/docs-schema",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "license": "Apache-2.0",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "dependencies": {
+    "zod": "catalog:zod"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
+    "@vitest/coverage-v8": "catalog:vitest",
+    "eslint": "catalog:eslint9",
+    "typescript": "catalog:typescript6",
+    "vitest": "catalog:vitest"
+  },
   "exports": {
     ".": {
       "import": "./src/index.ts",
@@ -20,6 +25,10 @@
       "types": "./src/*.ts"
     }
   },
+  "license": "Apache-2.0",
+  "main": "src/index.ts",
+  "name": "@repo/docs-schema",
+  "private": true,
   "scripts": {
     "build": "tsc",
     "check-types": "tsc --noEmit",
@@ -27,16 +36,7 @@
     "test": "vitest",
     "test:ci": "vitest --run --coverage"
   },
-  "dependencies": {
-    "zod": "catalog:zod"
-  },
-  "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
-    "@repo/vitest-config": "workspace:*",
-    "@vitest/coverage-v8": "catalog:vitest",
-    "eslint": "catalog:eslint9",
-    "typescript": "catalog:typescript6",
-    "vitest": "catalog:vitest"
-  }
+  "type": "module",
+  "types": "src/index.ts",
+  "version": "0.0.0"
 }

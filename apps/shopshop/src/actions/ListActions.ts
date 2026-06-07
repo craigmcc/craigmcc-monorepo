@@ -9,8 +9,10 @@ import {
   ERRORS,
   ValidationActionResult,
 } from "@repo/daisy-form/ActionResult";
-import { dbShopShop, List, MemberRole } from "@repo/db-shopshop";
-import { IdSchemaType, IdSchema } from "@repo/db-shopshop/zod-schemas/IdSchema";
+import { dbShopShop } from "@repo/db-shopshop";
+import { MemberRole } from "@repo/db-shopshop/enums";
+import type { List } from "@repo/db-shopshop/types";
+import { IdSchema, IdSchemaType } from "@repo/db-shopshop/zod-schemas/IdSchema";
 import {
   ListCreateSchema,
   ListCreateSchemaType,

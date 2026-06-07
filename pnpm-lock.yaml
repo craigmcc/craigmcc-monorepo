@@ -368,6 +368,9 @@ importers:
       '@repo/shared-utils':
         specifier: workspace:*
         version: link:../../packages/shared-utils
+      '@tanstack/react-table':
+        specifier: catalog:tanstack
+        version: 8.21.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       better-auth:
         specifier: catalog:better-auth1
         version: 1.6.11(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@6.0.2))(typescript@6.0.2))(mysql2@3.15.3)(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.20.0)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@6.0.2))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.2(@types/node@24.0.11)(jsdom@29.0.1(@noble/hashes@2.2.0))(msw@2.12.14(@types/node@24.0.11)(typescript@6.0.2))(vite@8.0.8(@types/node@24.0.11)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.22.1)))

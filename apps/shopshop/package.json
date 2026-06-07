@@ -7,6 +7,7 @@
     "@repo/daisy-ui": "workspace:*",
     "@repo/db-shopshop": "workspace:*",
     "@repo/shared-utils": "workspace:*",
+    "@tanstack/react-table": "catalog:tanstack",
     "better-auth": "catalog:better-auth1",
     "lucide-react": "catalog:lucide",
     "next": "catalog:next16",
@@ -33,8 +34,8 @@
     "@vitest/coverage-v8": "catalog:vitest",
     "daisyui": "catalog:daisyui5",
     "eslint": "catalog:eslint9",
-    "jsdom": "catalog:jsdom",
     "eslint-config-next": "catalog:eslint9",
+    "jsdom": "catalog:jsdom",
     "tailwindcss": "catalog:tailwind4",
     "typescript": "catalog:typescript6",
     "vitest": "catalog:vitest"

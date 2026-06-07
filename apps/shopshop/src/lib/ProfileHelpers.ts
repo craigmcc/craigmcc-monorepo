@@ -4,7 +4,8 @@
 
 // External Imports ----------------------------------------------------------
 
-import { dbShopShop as db, Profile } from "@repo/db-shopshop";
+import { dbShopShop as db } from "@repo/db-shopshop";
+import type { Profile } from "@repo/db-shopshop/types";
 
 // Public Objects ------------------------------------------------------------
 

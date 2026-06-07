@@ -15,12 +15,12 @@ import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import type { Profile } from "@repo/db-shopshop/types";
 
 // Internal Modules ----------------------------------------------------------
 
 import { signOut } from "@/auth/auth-client";
 import { useCurrentProfileContext } from "@/contexts/CurrentProfileContext";
-import { Profile } from "@repo/db-shopshop";
 
 // Public Objects ------------------------------------------------------------
 

@@ -5,7 +5,7 @@
 // External Imports ----------------------------------------------------------
 
 import { ERRORS } from "@repo/daisy-form/ActionResult";
-import { MemberRole } from "@repo/db-shopshop";
+import { MemberRole } from "@repo/db-shopshop/enums";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it } from "vitest";
 

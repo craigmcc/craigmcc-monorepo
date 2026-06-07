@@ -9,7 +9,8 @@ import {
   ERRORS,
   ValidationActionResult,
 } from "@repo/daisy-form/ActionResult";
-import { dbShopShop, Category } from "@repo/db-shopshop";
+import { dbShopShop } from "@repo/db-shopshop";
+import type { Category } from "@repo/db-shopshop/types";
 import { IdSchema, IdSchemaType } from "@repo/db-shopshop/zod-schemas/IdSchema";
 import {
   CategoryCreateSchema,

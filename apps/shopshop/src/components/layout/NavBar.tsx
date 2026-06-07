@@ -47,6 +47,9 @@ export function NavBar() {
             <Menu.Item>
               <Link href="/profile">Edit Profile</Link>
             </Menu.Item>
+            <Menu.Item>
+              <Link href={"/members"}>See My Lists</Link>
+            </Menu.Item>
             <Menu.Separator/>
             <Menu.Item>
               <Link href="/auth/signOut">Sign Out</Link>

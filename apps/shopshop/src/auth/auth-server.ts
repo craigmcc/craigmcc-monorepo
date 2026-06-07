@@ -4,7 +4,8 @@
 
 // External Imports ----------------------------------------------------------
 
-import { dbShopShop, Profile } from "@repo/db-shopshop";
+import { dbShopShop } from "@repo/db-shopshop";
+import type { Profile } from "@repo/db-shopshop/types";
 import { serverLogger as logger } from "@repo/shared-utils";
 import { betterAuth } from "better-auth";
 import type { Auth, BetterAuthOptions } from "better-auth";

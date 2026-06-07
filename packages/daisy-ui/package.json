@@ -6,8 +6,8 @@
     "lucide-react": "catalog:lucide",
     "postcss": "catalog:postcss",
     "react": "catalog:react19",
-    "react-dom": "catalog:react19",
     "react-aria-components": "catalog:react-aria-components",
+    "react-dom": "catalog:react19",
     "tailwind-merge": "catalog:tailwind-merge",
     "zod": "catalog:zod"
   },

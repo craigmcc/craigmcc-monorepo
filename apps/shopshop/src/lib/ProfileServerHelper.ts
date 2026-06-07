@@ -4,7 +4,7 @@
 
 // External Imports ----------------------------------------------------------
 
-import { Profile } from "@repo/db-shopshop";
+import type { Profile } from "@repo/db-shopshop/types";
 import { headers } from "next/headers";
 
 // Internal Imports ----------------------------------------------------------

@@ -31,8 +31,8 @@
     "@vitest/coverage-v8": "catalog:vitest",
     "daisyui": "catalog:daisyui5",
     "eslint": "catalog:eslint9",
-    "jsdom": "catalog:jsdom",
     "eslint-config-next": "catalog:eslint9",
+    "jsdom": "catalog:jsdom",
     "tailwindcss": "catalog:tailwind4",
     "typescript": "catalog:typescript6",
     "vitest": "catalog:vitest"

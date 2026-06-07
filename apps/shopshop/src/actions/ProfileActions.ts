@@ -16,7 +16,8 @@ import {
   ERRORS,
   ValidationActionResult
 } from "@repo/daisy-form/ActionResult";
-import { dbShopShop, Profile } from "@repo/db-shopshop";
+import { dbShopShop } from "@repo/db-shopshop";
+import type { Profile } from "@repo/db-shopshop/types";
 import {
   ProfileUpdateSchema,
   ProfileUpdateSchemaType,

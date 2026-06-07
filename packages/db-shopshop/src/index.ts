@@ -1,6 +1,5 @@
 /**
- * Export the Prisma client (dbShopShop) and all generated types.
+ * Export the Prisma database client.
  */
 
 export { dbShopShop } from "./client";
-export * from "../generated/prisma/client";

@@ -7,10 +7,10 @@
 // External Modules ----------------------------------------------------------
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import type { Profile } from "@repo/db-shopshop/types";
 
 // Internal Modules ----------------------------------------------------------
 
-import { Profile } from "@repo/db-shopshop";
 
 // Public Objects ------------------------------------------------------------
 

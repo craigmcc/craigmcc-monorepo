@@ -8,7 +8,7 @@
 
 // External Modules ----------------------------------------------------------
 
-import { List, Profile } from "@repo/db-shopshop";
+import type { List, Profile } from "@repo/db-shopshop/types";
 
 // Internal Modules ----------------------------------------------------------
 

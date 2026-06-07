@@ -14,12 +14,12 @@ import { clientLogger as logger } from "@repo/shared-utils/ClientLogger";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import type { Profile } from "@repo/db-shopshop/types";
 
 // Internal Modules ----------------------------------------------------------
 
 import { getSession, signIn } from "@/auth/auth-client";
 import { useCurrentProfileContext } from "@/contexts/CurrentProfileContext";
-import { Profile } from "@repo/db-shopshop";
 import { SignInSchema, type SignInSchemaType } from "@/zod-schemas/SignInSchema";
 
 // Public Objects ------------------------------------------------------------

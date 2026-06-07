@@ -4,7 +4,9 @@
 
 // External Modules ----------------------------------------------------------
 
-import { dbShopShop as db, Category, Item, List, Member, MemberRole, Profile } from "@repo/db-shopshop";
+import { dbShopShop as db } from "@repo/db-shopshop";
+import { MemberRole } from "@repo/db-shopshop/enums";
+import type { Category, Item, List, Member, Profile } from "@repo/db-shopshop/types";
 
 // Internal Modules ----------------------------------------------------------
 

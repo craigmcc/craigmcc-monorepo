@@ -5,7 +5,8 @@
 // External Imports ----------------------------------------------------------
 
 import { ERRORS } from "@repo/daisy-form/ActionResult";
-import { dbShopShop as db, MemberRole } from "@repo/db-shopshop";
+import { dbShopShop as db } from "@repo/db-shopshop";
+import { MemberRole } from "@repo/db-shopshop/enums";
 import {
   CategoryCreateSchemaType,
   CategoryUpdateSchemaType,

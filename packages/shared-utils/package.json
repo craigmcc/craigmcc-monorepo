@@ -1,7 +1,20 @@
 {
-  "name": "@repo/shared-utils",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "dependencies": {
+    "date-fns": "catalog:date-fns",
+    "pino": "catalog:pino",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/testing-react": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
+    "@vitest/coverage-v8": "catalog:vitest",
+    "eslint": "catalog:eslint9",
+    "exceljs": "catalog:exceljs",
+    "typescript": "catalog:typescript6",
+    "vitest": "catalog:vitest"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -15,6 +28,8 @@
     }
   },
   "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "name": "@repo/shared-utils",
   "private": true,
   "scripts": {
     "build": "tsc",
@@ -25,21 +40,6 @@
     "test:ci": "vitest --run --coverage"
   },
   "type": "module",
-  "version": "0.0.0",
-  "dependencies": {
-    "date-fns": "catalog:date-fns",
-    "pino": "catalog:pino",
-    "zod": "^4.3.6"
-  },
-  "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
-    "@repo/vitest-config": "workspace:*",
-    "@vitest/coverage-v8": "catalog:vitest",
-    "eslint": "catalog:eslint9",
-    "vitest": "catalog:vitest",
-    "typescript": "catalog:typescript6",
-    "exceljs": "catalog:exceljs",
-    "@repo/testing-react": "workspace:*"
-  }
+  "types": "dist/index.d.ts",
+  "version": "0.0.0"
 }

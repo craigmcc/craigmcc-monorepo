@@ -9,9 +9,10 @@
 // External Modules ----------------------------------------------------------
 
 import { ActionResult } from "@repo/daisy-form/ActionResult";
-import { Card } from "@repo/daisy-ui/Card";
 import { ServerResult } from "@repo/daisy-form/ServerResult";
 import { useAppForm } from "@repo/daisy-form/useAppForm";
+import { Card } from "@repo/daisy-ui/Card";
+import type { Profile } from "@repo/db-shopshop/types";
 import { clientLogger as logger } from "@repo/shared-utils/ClientLogger";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -21,7 +22,6 @@ import { toast } from "react-toastify";
 
 import { getSession, signUp } from "@/auth/auth-client";
 import { useCurrentProfileContext } from "@/contexts/CurrentProfileContext";
-import { Profile } from "@repo/db-shopshop";
 import { SignUpSchema, type SignUpSchemaType } from "@/zod-schemas/SignUpSchema";
 
 // Public Objects ------------------------------------------------------------

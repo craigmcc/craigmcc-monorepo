@@ -13,12 +13,12 @@
 
 // External Imports ----------------------------------------------------------
 
-import { Input } from "@repo/daisy-ui/Input";
 import { DataTable, type TableAction } from "@repo/daisy-table/DataTable";
 import {
   type TanStackFilterAdapterConfig,
   useDaisyTableFilters,
 } from "@repo/daisy-table/filtering";
+import { Input } from "@repo/daisy-ui/Input";
 import { stringCodec, type FilterSchema } from "@repo/shared-utils/filters";
 import {
   type CellContext,
@@ -87,7 +87,7 @@ export function DateRangeTable({ events }: DateRangeTableProps) {
         // Note: In this pattern, we read the range values directly from the parent component's
         // filters object, NOT from TanStack's columnFilters. This keeps the logic simple and
         // avoids the complexity of mapping multiple schema fields to a single column.
-        filterFn: (row, _columnId) => {
+        filterFn: (row) => {
           const createdAt = row.getValue<Date>("createdAt");
           const { dateFrom, dateTo } = filters;
 
@@ -242,62 +242,4 @@ const actions: TableAction<Event>[] = [
 ];
 
 const columnHelper = createColumnHelper<Event>();
-
-// Sample events spanning 2025
-const SAMPLE_EVENTS: Event[] = [
-  {
-    id: 1,
-    title: "Q1 Planning Session",
-    description: "Quarterly planning for 2025",
-    createdAt: new Date("2025-01-15"),
-  },
-  {
-    id: 2,
-    title: "Team Offsite",
-    description: "Annual team building event",
-    createdAt: new Date("2025-02-20"),
-  },
-  {
-    id: 3,
-    title: "Product Launch",
-    description: "Version 2.0 release",
-    createdAt: new Date("2025-03-10"),
-  },
-  {
-    id: 4,
-    title: "Customer Summit",
-    description: "Annual customer conference",
-    createdAt: new Date("2025-05-22"),
-  },
-  {
-    id: 5,
-    title: "Mid-Year Review",
-    description: "Performance reviews",
-    createdAt: new Date("2025-06-30"),
-  },
-  {
-    id: 6,
-    title: "Security Audit",
-    description: "Third-party security assessment",
-    createdAt: new Date("2025-08-15"),
-  },
-  {
-    id: 7,
-    title: "Q4 Planning",
-    description: "Final quarter planning",
-    createdAt: new Date("2025-09-05"),
-  },
-  {
-    id: 8,
-    title: "Year-End Party",
-    description: "Annual celebration",
-    createdAt: new Date("2025-12-20"),
-  },
-];
-
-
-
-
-
-
 
