@@ -40,12 +40,13 @@ describe("ProfileActions", () => {
       setProfile(profile);
       const update: ProfileUpdateSchemaType = {
         email: PROFILES[1]!.email!,
-        name: profile.name,
+        name: profile!.name,
       }
 
       const result = await updateProfile(update);
 
       expect(result.message).toBe("That email address is already in use");
+      expect(result.status).toBe(409);
 
     });
 
@@ -56,6 +57,7 @@ describe("ProfileActions", () => {
       const result = await updateProfile({});
 
       expect(result.message).toBe(ERRORS.AUTHENTICATION);
+      expect(result.status).toBe(401);
 
     });
 
@@ -67,9 +69,9 @@ describe("ProfileActions", () => {
       const result = await updateProfile({});
 
       expect(result.model).toBeDefined();
-      expect(result.model!.id).toBe(profile.id);
-      expect(result.model!.email).toBe(profile.email);
-      expect(result.model!.name).toBe(profile.name);
+      expect(result.model!.id).toBe(profile!.id);
+      expect(result.model!.email).toBe(profile!.email);
+      expect(result.model!.name).toBe(profile!.name);
 
     });
 
@@ -80,9 +82,9 @@ describe("ProfileActions", () => {
     const profile = await lookupProfileByEmail(PROFILES[1]!.email!);
     setProfile(profile);
     const update: ProfileUpdateSchemaType = {
-      email: "New" + profile.email,
-      imageUrl: profile.imageUrl? profile.imageUrl + "New" : undefined,
-      name: "New " + profile.name,
+      email: "New" + profile!.email,
+      imageUrl: profile!.imageUrl ? profile!.imageUrl + "New" : undefined,
+      name: "New " + profile!.name,
     }
 
     try {
@@ -90,7 +92,7 @@ describe("ProfileActions", () => {
       const result = await updateProfile(update);
 
       expect(result.model).toBeDefined();
-      expect(result.model!.id).toBe(profile.id);
+      expect(result.model!.id).toBe(profile!.id);
       expect(result.model!.email).toBe(update.email);
       expect(result.model!.name).toBe(update.name);
 
@@ -105,9 +107,9 @@ describe("ProfileActions", () => {
     const profile = await lookupProfileByEmail(PROFILES[2]!.email!);
     setProfile(profile);
     const update: ProfileUpdateSchemaType = {
-      email: profile.email,
-      imageUrl: profile.imageUrl? profile.imageUrl : undefined,
-      name: profile.name,
+      email: profile!.email,
+      imageUrl: profile!.imageUrl ? profile!.imageUrl : undefined,
+      name: profile!.name,
     }
 
     try {
@@ -115,9 +117,9 @@ describe("ProfileActions", () => {
       const result = await updateProfile(update);
 
       expect(result.model).toBeDefined();
-      expect(result.model!.id).toBe(profile.id);
-      expect(result.model!.email).toBe(profile.email);
-      expect(result.model!.name).toBe(profile.name);
+      expect(result.model!.id).toBe(profile!.id);
+      expect(result.model!.email).toBe(profile!.email);
+      expect(result.model!.name).toBe(profile!.name);
 
     } catch (error) {
       console.error("Error during updateProfile:", error);

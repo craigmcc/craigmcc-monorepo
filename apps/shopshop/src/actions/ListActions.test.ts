@@ -55,6 +55,7 @@ describe("ListActions", () => {
 
       expect(result.message).toBe(ERRORS.AUTHENTICATION);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(401);
 
     });
 
@@ -70,6 +71,7 @@ describe("ListActions", () => {
 
       expect(result.message).toBe(ERRORS.DATA_VALIDATION);
       expect(result.fieldErrors).toBeDefined();
+      expect(result.status).toBe(400);
 
     });
 
@@ -121,6 +123,7 @@ describe("ListActions", () => {
 
       expect(result.message).toBe(ERRORS.ID_VALIDATION);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(400);
 
     });
 
@@ -135,6 +138,7 @@ describe("ListActions", () => {
 
       expect(result.message).toBe(ERRORS.AUTHENTICATION);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(401);
 
     });
 
@@ -150,6 +154,7 @@ describe("ListActions", () => {
 
       expect(result.message).toBe(NOT_AUTHORIZED_MESSAGE);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(403);
 
     });
 
@@ -166,6 +171,7 @@ describe("ListActions", () => {
 
       expect(result.message).toBe(ERRORS.DATA_VALIDATION);
       expect(result.fieldErrors).toBeDefined();
+      expect(result.status).toBe(400);
 
     });
 
@@ -200,6 +206,7 @@ describe("ListActions", () => {
 
       expect(result.message).toBe(ERRORS.ID_VALIDATION);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(400);
 
     });
 
@@ -212,6 +219,7 @@ describe("ListActions", () => {
 
       expect(result.message).toBe(ERRORS.AUTHENTICATION);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(401);
 
     });
 
@@ -225,6 +233,7 @@ describe("ListActions", () => {
 
       expect(result.message).toBe(NOT_AUTHORIZED_MESSAGE);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(403);
 
     });
 

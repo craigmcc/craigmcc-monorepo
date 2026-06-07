@@ -31,51 +31,62 @@ import { findProfile } from "@/lib/ProfileServerHelper";
 
 export async function updateProfile(data: ProfileUpdateSchemaType): Promise<ActionResult<Profile>> {
 
-  // AUTHENTICATION - Must be signed in
-  const profile = await findProfile();
-  if (!profile) {
-    return ({ message: ERRORS.AUTHENTICATION, status: 401 });
-  }
+  try {
 
-  // AUTHORIZATION - Can only update own profile, so no check required
+    // AUTHENTICATION - Must be signed in
+    const profile = await findProfile();
+    if (!profile) {
+      return ({ message: ERRORS.AUTHENTICATION, status: 401 });
+    }
 
-  // VALIDATION - Validate input content
-  const result =  ProfileUpdateSchema.safeParse(data);
-  if (!result.success) {
+    // AUTHORIZATION - Can only update own profile, so no check required
+
+    // VALIDATION - Validate input content
+    const result =  ProfileUpdateSchema.safeParse(data);
+    if (!result.success) {
+      logger.error({
+        context: "ProfileActions.updateProfile",
+        data,
+        issues: result.error.issues,
+      });
+      return ValidationActionResult<Profile>(result.error);
+    }
+
+    // VALIDATION - Check for uniqueness constraint violation
+    if (data.email) {
+      const existing = await dbShopShop.profile.findUnique({
+        where: {
+          email: data.email,
+          NOT: {
+            id: profile.id,
+          }
+        },
+      });
+      if (existing) {
+        return ({ message: "That email address is already in use", status: 409 });
+      }
+    }
+
+    // MUTATION - Update the Profile and the corresponding User
+    const updated = await dbShopShop.profile.update({
+      data,
+      where: { id: profile.id }
+    });
+    await dbShopShop.user.update({
+      data,
+      where: { email: profile.email },
+    });
+
+    return ({ model: updated });
+
+  } catch (error) {
     logger.error({
       context: "ProfileActions.updateProfile",
-      data,
-      issues: result.error.issues,
+      error,
+      message: "Unexpected error updating Profile",
     });
-    return ValidationActionResult<Profile>(result.error);
+    return ({ message: ERRORS.INTERNAL_SERVER_ERROR, status: 500 });
   }
-
-  // VALIDATION - Check for uniqueness constraint violation
-  if (data.email) {
-    const existing = await dbShopShop.profile.findUnique({
-      where: {
-        email: data.email,
-        NOT: {
-          id: profile.id,
-        }
-      },
-    });
-    if (existing) {
-      return ({ message: "That email address is already in use", status: 409 });
-    }
-  }
-
-  // MUTATION - Update the Profile and the corresponding User
-  const updated = await dbShopShop.profile.update({
-    data,
-    where: { id: profile.id }
-  });
-  await dbShopShop.user.update({
-    data,
-    where: { email: profile.email },
-  });
-
-  return ({ model: updated });
 
 }
 

@@ -67,6 +67,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(ERRORS.AUTHENTICATION);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(401);
 
     });
 
@@ -85,6 +86,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(ERRORS.DATA_VALIDATION);
       expect(result.fieldErrors).toBeDefined();
+      expect(result.status).toBe(400);
 
     });
 
@@ -103,6 +105,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(NO_CATEGORY_MESSAGE);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(404);
 
     });
 
@@ -122,6 +125,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(CATEGORY_LIST_MISMATCH_MESSAGE);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(400);
 
     });
 
@@ -142,6 +146,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(NOT_AUTHORIZED_MESSAGE);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(403);
 
     });
 
@@ -187,6 +192,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(ERRORS.ID_VALIDATION);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(400);
 
     });
 
@@ -201,6 +207,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(ERRORS.AUTHENTICATION);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(401);
 
     });
 
@@ -215,6 +222,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(NO_ITEM_MESSAGE);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(404);
 
     });
 
@@ -230,6 +238,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(NOT_AUTHORIZED_MESSAGE);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(403);
 
     });
 
@@ -246,6 +255,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(ERRORS.DATA_VALIDATION);
       expect(result.fieldErrors).toBeDefined();
+      expect(result.status).toBe(400);
 
     });
 
@@ -286,6 +296,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(ERRORS.ID_VALIDATION);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(400);
 
     });
 
@@ -298,6 +309,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(ERRORS.AUTHENTICATION);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(401);
 
     });
 
@@ -310,6 +322,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(NO_ITEM_MESSAGE);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(404);
 
     });
 
@@ -323,6 +336,7 @@ describe("ItemActions", () => {
 
       expect(result.message).toBe(NOT_AUTHORIZED_MESSAGE);
       expect(result.model).toBeUndefined();
+      expect(result.status).toBe(403);
 
     });
 
