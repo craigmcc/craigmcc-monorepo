@@ -34,7 +34,7 @@ export async function updateProfile(data: ProfileUpdateSchemaType): Promise<Acti
   // AUTHENTICATION - Must be signed in
   const profile = await findProfile();
   if (!profile) {
-    return ({ message: ERRORS.AUTHENTICATION });
+    return ({ message: ERRORS.AUTHENTICATION, status: 401 });
   }
 
   // AUTHORIZATION - Can only update own profile, so no check required
@@ -61,12 +61,11 @@ export async function updateProfile(data: ProfileUpdateSchemaType): Promise<Acti
       },
     });
     if (existing) {
-      return ({ message: "That email address is already in use" });
+      return ({ message: "That email address is already in use", status: 409 });
     }
   }
 
-
-// MUTATION - Update the Profile and the corresponding User
+  // MUTATION - Update the Profile and the corresponding User
   const updated = await dbShopShop.profile.update({
     data,
     where: { id: profile.id }
