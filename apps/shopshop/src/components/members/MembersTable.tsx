@@ -8,6 +8,7 @@
 // External Imports ----------------------------------------------------------
 
 import { DataTable, type TableAction } from "@repo/daisy-table/DataTable";
+import { Button } from "@repo/daisy-ui/Button";
 import { Card } from "@repo/daisy-ui/Card";
 import {
   createColumnHelper,
@@ -15,11 +16,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 // Internal Imports ----------------------------------------------------------
 
-import type { MemberPlus } from "@/types/Types";
+import { ListForm } from "@/components/lists/ListForm";
+import type { ListPlus, MemberPlus } from "@/types/Types";
 
 // Public Objects ------------------------------------------------------------
 
@@ -30,6 +32,10 @@ export type MembersTableProps = {
 
 export function MembersTable({ members }: MembersTableProps) {
 
+  const [isCreatingOpen, setIsCreatingOpen] = useState<boolean>(false);
+  const [isDeletingOpen, setIsDeletingOpen] = useState<boolean>(false);
+  const [isUpdatingOpen, setIsUpdatingOpen] = useState<boolean>(false);
+  const [list, setList] = useState<ListPlus | undefined>(undefined);
   const router = useRouter();
 
   const actions: TableAction<MemberPlus>[] = [
@@ -40,9 +46,17 @@ export function MembersTable({ members }: MembersTableProps) {
       }),
     },
     {
-      label: "Edit List",
+      label: "Delete List",
       onClick: (row => {
-        router.push(`/list/${row.original.listId}`);
+        setList(row.original.list);
+        setIsDeletingOpen(true);
+      }),
+    },
+    {
+      label: "Update List",
+      onClick: (row => {
+        setList(row.original.list);
+        setIsUpdatingOpen(true);
       }),
     },
   ];
@@ -75,20 +89,44 @@ export function MembersTable({ members }: MembersTableProps) {
   });
 
   return (
-    <Card
-      border
-      size="md"
-    >
-      <Card.Title className="justify-center">My Lists</Card.Title>
-      <Card.Body>
-        <DataTable
-          actions={actions}
-          border
-          table={table}
-          zebra
-        />
-      </Card.Body>
-    </Card>
+    <>
+
+      <Card
+        border
+        size="md"
+      >
+        <Card.Title className="justify-center">My Lists</Card.Title>
+        <Card.Actions>
+          <Button
+            onClick={() => {
+              setList(undefined);
+              setIsCreatingOpen(true);
+            }}
+          >
+            Create List
+          </Button>
+        </Card.Actions>
+        <Card.Body>
+          <DataTable
+            actions={actions}
+            border
+            table={table}
+            zebra
+          />
+        </Card.Body>
+      </Card>
+
+      {isCreatingOpen && (
+        <ListForm list={undefined} onClose={() => setIsCreatingOpen(false)}/>
+      )}
+      {isDeletingOpen && (
+        <ListForm deleting={true} list={list} onClose={() => setIsDeletingOpen(false)}/>
+      )}
+      {isUpdatingOpen && (
+        <ListForm deleting={false} list={list} onClose={() => setIsUpdatingOpen(false)}/>
+      )}
+
+    </>
   )
 
 }
