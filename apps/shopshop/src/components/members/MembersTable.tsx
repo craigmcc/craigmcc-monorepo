@@ -20,8 +20,8 @@ import { useMemo, useState } from "react";
 
 // Internal Imports ----------------------------------------------------------
 
-import { ListForm } from "@/components/lists/ListForm";
-import type { ListPlus, MemberPlus } from "@/types/Types";
+import { ListForm, type ListFormProps } from "@/components/lists/ListForm";
+import type { MemberPlus } from "@/types/Types";
 
 // Public Objects ------------------------------------------------------------
 
@@ -32,10 +32,8 @@ export type MembersTableProps = {
 
 export function MembersTable({ members }: MembersTableProps) {
 
-  const [isCreatingOpen, setIsCreatingOpen] = useState<boolean>(false);
-  const [isDeletingOpen, setIsDeletingOpen] = useState<boolean>(false);
-  const [isUpdatingOpen, setIsUpdatingOpen] = useState<boolean>(false);
-  const [list, setList] = useState<ListPlus | undefined>(undefined);
+  const [isListFormOpen, setIsListFormOpen] = useState<boolean>(false);
+  const [listFormProps, setListFormProps] = useState<ListFormProps | null>(null);
   const router = useRouter();
 
   const actions: TableAction<MemberPlus>[] = [
@@ -48,15 +46,23 @@ export function MembersTable({ members }: MembersTableProps) {
     {
       label: "Delete List",
       onClick: (row => {
-        setList(row.original.list);
-        setIsDeletingOpen(true);
+        setListFormProps({
+          deleting: true,
+          list: row.original.list,
+          onClose: () => setIsListFormOpen(false),
+        });
+        setIsListFormOpen(true);
       }),
     },
     {
       label: "Update List",
       onClick: (row => {
-        setList(row.original.list);
-        setIsUpdatingOpen(true);
+        setListFormProps({
+          deleting: false,
+          list: row.original.list,
+          onClose: () => setIsListFormOpen(false),
+        });
+        setIsListFormOpen(true);
       }),
     },
   ];
@@ -99,8 +105,10 @@ export function MembersTable({ members }: MembersTableProps) {
         <Card.Actions>
           <Button
             onClick={() => {
-              setList(undefined);
-              setIsCreatingOpen(true);
+              setListFormProps({
+                onClose: () => setIsListFormOpen(false),
+              });
+              setIsListFormOpen(true);
             }}
           >
             Create List
@@ -116,14 +124,12 @@ export function MembersTable({ members }: MembersTableProps) {
         </Card.Body>
       </Card>
 
-      {isCreatingOpen && (
-        <ListForm list={undefined} onClose={() => setIsCreatingOpen(false)}/>
-      )}
-      {isDeletingOpen && (
-        <ListForm deleting={true} list={list} onClose={() => setIsDeletingOpen(false)}/>
-      )}
-      {isUpdatingOpen && (
-        <ListForm deleting={false} list={list} onClose={() => setIsUpdatingOpen(false)}/>
+      {isListFormOpen && (
+        <ListForm
+          deleting={listFormProps?.deleting}
+          list={listFormProps?.list}
+          onClose={listFormProps?.onClose || (() => setIsListFormOpen(false))}
+        />
       )}
 
     </>
