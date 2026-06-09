@@ -19,7 +19,6 @@ import {
   type ListUpdateSchemaType,
 } from "@repo/db-shopshop/zod-schemas/ListSchema";
 import { clientLogger as logger } from "@repo/shared-utils/ClientLogger";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
@@ -34,11 +33,9 @@ export type ListFormProps = {
   deleting?: boolean;
   // The List to be deleted or edited (if any).  Null means creating a new List.
   list?: ListPlus;
-  // Function to close the modal when we are done
-  onClose: () => void;
+  // Function to close the modal when we are done; true means data changed
+  onClose: (didMutate?: boolean) => void;
 }
-
-const DESTINATION = "/members";
 
 export function ListForm({ deleting = false, list, onClose }: ListFormProps) {
 
@@ -46,8 +43,6 @@ export function ListForm({ deleting = false, list, onClose }: ListFormProps) {
   const isDeleting = deleting && !!list;
   const isUpdating = !!list && !deleting;
   const [serverResult, setServerResult] = useState<ActionResult<ListPlus> | null>(null);
-  const router = useRouter();
-
   // Set up the form
   const defaultValuesCreate: ListCreateSchemaType = {
     name: "",
@@ -67,13 +62,14 @@ export function ListForm({ deleting = false, list, onClose }: ListFormProps) {
 
   // Invoke the requested action based on our mode
   async function submitForm(formData: ListCreateSchemaType | ListUpdateSchemaType) {
+    let didMutate = false;
     {
       if (isCreating) {
-        await handleCreate(formData as ListCreateSchemaType);
+        didMutate = await handleCreate(formData as ListCreateSchemaType);
       } else if (isDeleting) {
-        await handleDelete(list.id);
+        didMutate = await handleDelete(list.id);
       } else if (isUpdating) {
-        await handleUpdate(list.id, formData as ListUpdateSchemaType);
+        didMutate = await handleUpdate(list.id, formData as ListUpdateSchemaType);
       } else {
         logger.error({
           context: "ListForm.submitForm.mode",
@@ -85,11 +81,11 @@ export function ListForm({ deleting = false, list, onClose }: ListFormProps) {
         });
         setServerResult({ message:"Unknown mode, 'deleting' was set with no List" });
       }
-      onClose();
+      onClose(didMutate);
     }
   }
 
-  async function handleCreate(formData: ListCreateSchemaType) {
+  async function handleCreate(formData: ListCreateSchemaType): Promise<boolean> {
     const response = await fetch("/api/list", {
       body: JSON.stringify(formData),
       headers: {
@@ -104,13 +100,15 @@ export function ListForm({ deleting = false, list, onClose }: ListFormProps) {
       });
       setServerResult(null);
       toast.success(`List '${formData.name}' created successfully!`)
+      return true;
     } else {
       setServerResult({ message: `HTTP error ${response.status}: ${response.statusText}` });
       toast.error(`Error creating List: HTTP error ${response.status}`);
+      return false;
     }
   }
 
-  async function handleDelete(listId: string) {
+  async function handleDelete(listId: string): Promise<boolean> {
     const response = await fetch(`/api/list/${listId}`, {
       method: "DELETE",
     });
@@ -120,13 +118,15 @@ export function ListForm({ deleting = false, list, onClose }: ListFormProps) {
       });
       setServerResult(null);
       toast.success(`List '${list!.name}' deleted successfully!`)
+      return true;
     } else {
       setServerResult({message: `HTTP error ${response.status}: ${response.statusText}`});
       toast.error(`Error creating List: HTTP error ${response.status}`);
+      return false;
     }
   }
 
-  async function handleUpdate(listId: string, formData: ListUpdateSchemaType) {
+  async function handleUpdate(listId: string, formData: ListUpdateSchemaType): Promise<boolean> {
     const response = await fetch(`/api/list/${listId}`, {
       body: JSON.stringify(formData),
       headers: {
@@ -141,15 +141,17 @@ export function ListForm({ deleting = false, list, onClose }: ListFormProps) {
       });
       setServerResult(null);
       toast.success(`List '${formData.name}' created successfully!`)
+      return true;
     } else {
       setServerResult({ message: `HTTP error ${response.status}: ${response.statusText}` });
       toast.error(`Error updating List: HTTP error ${response.status}`);
+      return false;
     }
   }
 
   return (
-    <Modal border className="modal-open" id="list-form-modal">
-      <Modal.Closer/>
+    <Modal border className="modal-open" id="list-form-modal" onClose={() => onClose(false)}>
+      <Modal.Closer onPress={() => onClose(false)} />
       <Modal.Body>
         <Card>
           <Card.Title className="justify-center">
@@ -166,7 +168,7 @@ export function ListForm({ deleting = false, list, onClose }: ListFormProps) {
                 </div>
                 <div className="flex flex-row w-full justify-center gap-4">
                   <Button
-                    onClick={() => router.push(DESTINATION)}
+                    onClick={() => onClose(false)}
                   >
                     Cancel
                   </Button>

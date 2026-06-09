@@ -36,6 +36,13 @@ export function MembersTable({ members }: MembersTableProps) {
   const [listFormProps, setListFormProps] = useState<ListFormProps | null>(null);
   const router = useRouter();
 
+  function handleListFormClose(didMutate = false) {
+    setIsListFormOpen(false);
+    if (didMutate) {
+      router.refresh();
+    }
+  }
+
   const actions: TableAction<MemberPlus>[] = [
     {
       label: "Go Shopping",
@@ -49,7 +56,7 @@ export function MembersTable({ members }: MembersTableProps) {
         setListFormProps({
           deleting: true,
           list: row.original.list,
-          onClose: () => setIsListFormOpen(false),
+          onClose: handleListFormClose,
         });
         setIsListFormOpen(true);
       }),
@@ -60,7 +67,7 @@ export function MembersTable({ members }: MembersTableProps) {
         setListFormProps({
           deleting: false,
           list: row.original.list,
-          onClose: () => setIsListFormOpen(false),
+          onClose: handleListFormClose,
         });
         setIsListFormOpen(true);
       }),
@@ -106,7 +113,7 @@ export function MembersTable({ members }: MembersTableProps) {
           <Button
             onClick={() => {
               setListFormProps({
-                onClose: () => setIsListFormOpen(false),
+                onClose: handleListFormClose,
               });
               setIsListFormOpen(true);
             }}
@@ -128,7 +135,7 @@ export function MembersTable({ members }: MembersTableProps) {
         <ListForm
           deleting={listFormProps?.deleting}
           list={listFormProps?.list}
-          onClose={listFormProps?.onClose || (() => setIsListFormOpen(false))}
+          onClose={listFormProps?.onClose || handleListFormClose}
         />
       )}
 
