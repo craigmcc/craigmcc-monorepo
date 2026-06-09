@@ -216,13 +216,265 @@ Use this section to capture architecture decisions as ADR-lite entries.
   - **Alternatives considered:**
   - **Consequences:**
 
+- **Date:** 2026-06-08
+  - **Decision:** Prefer a transport-agnostic domain model with a phased sync strategy: (1) offline write queue + optimistic UI, (2) server-driven fan-out for shared-list updates, (3) mobile clients consume HTTP/WebSocket APIs rather than React Server Functions.
+  - **Context:** Product direction includes offline capture/replay, collaborative list updates, and eventual mobile apps. Current web implementation is server-first with Next.js pages plus action/route boundaries.
+  - **Alternatives considered:**
+    - Keep browser-only server action calls as the long-term write path.
+    - Defer offline and realtime entirely until native app work starts.
+    - Adopt a full local-first platform immediately across the whole app.
+  - **Consequences:**
+    - New writes should be modeled as durable operations/events with idempotency keys.
+    - Authorization/policy logic must remain server-side and reusable from multiple transports.
+    - Mobile support remains practical because core operations are exposed over standard APIs.
+
 ---
 
-## 15) Open Architecture Questions
+## 15) Future Sync and Mobile Strategy (Planning)
 
-- [ ] Should we standardize on route handlers, server actions, or a mixed model for app operations?
-- [ ] What is the canonical error envelope for application operations?
-- [ ] Which operations should be designed as batch endpoints from day one?
-- [ ] What API versioning strategy should we use once native clients exist?
+This section captures the current direction for long-term capabilities. It is a plan,
+not a commitment to immediate implementation.
 
+### 15.1 Offline optimistic capture and replay
 
+Target behavior:
+- User actions apply immediately in UI (optimistic).
+- Actions are durably queued when offline.
+- Queue replays in order when connectivity resumes.
+- Conflicts resolve predictably (server authoritative, client reconciles).
+
+Suggested baseline design:
+1. Define operation envelope used by all writes:
+   - `operationId` (UUID idempotency key)
+   - `actorProfileId`
+   - `listId`
+   - `operationType`
+   - `payload`
+   - `clientTimestamp`
+2. Persist queued operations locally (web: IndexedDB; mobile: device local DB).
+3. Apply optimistic projection locally per operation.
+4. Replay operations to server endpoint in FIFO order.
+5. Server enforces authorization and domain rules; returns accepted/rejected result.
+6. Client reconciles local projection to server-confirmed state.
+
+Conflict guidance:
+- Use idempotency keys so retries are safe.
+- Prefer operation semantics over raw document replacement.
+- Keep server as source of truth for shared data integrity.
+
+### 15.2 Realtime propagation while online
+
+Target behavior:
+- Changes to a shared list are pushed to all connected members quickly.
+
+Practical options:
+- **Option A (incremental):** DB write -> server publish -> WebSocket/SSE fan-out per `listId` channel.
+- **Option B (local-first stack):** Evaluate TanStack DB + ElectricSQL style replication/sync if product priorities justify the added complexity.
+
+Recommendation for sequencing:
+- Start with Option A to validate collaboration UX and authorization boundaries.
+- Re-evaluate Option B once offline + multi-client conflict needs are clearer.
+
+### 15.3 Mobile compatibility and React Server Functions
+
+Short answer: mobile clients should not depend on React Server Functions.
+
+Guidance:
+- React Server Functions are excellent for Next.js web ergonomics.
+- They are not a universal client transport contract for native mobile.
+- Keep core operations callable through transport-neutral boundaries (HTTP and realtime channels).
+
+Implication for architecture:
+- Treat server functions as a web adapter.
+- Keep domain/application logic behind shared server modules used by:
+  - Next.js server functions/routes (web)
+  - REST/tRPC/GraphQL endpoints (mobile and external clients)
+  - Realtime message handlers (collaboration)
+
+### 15.4 Suggested phased roadmap
+
+- **Phase 0 (now):** Keep current server-first flow; continue route/action hardening.
+- **Phase 1:** Introduce operation envelope + idempotency keys on write endpoints.
+- **Phase 2:** Add client-side queue + optimistic projection for selected write paths.
+- **Phase 3:** Add realtime fan-out for shared list channels.
+- **Phase 4:** Expose stable mobile-oriented API surface using the same server use cases.
+- **Phase 5:** Reassess full local-first sync stack (e.g., ElectricSQL-style) with measured data.
+
+### 15.5 Phase 1 technical checklist (operation envelope + idempotency)
+
+Use this checklist before implementing broad offline/realtime behavior.
+
+- [ ] **Define canonical operation envelope** with required fields:
+  - `operationId` (UUID)
+  - `operationType`
+  - `listId`
+  - `actorProfileId` (resolved server-side when possible)
+  - `payload`
+  - `clientTimestamp`
+  - `schemaVersion`
+- [ ] **Standardize write response envelope** for operation-aware writes:
+  - `operationId`
+  - `accepted` / `rejected`
+  - `status` (HTTP + app result)
+  - `serverTimestamp`
+  - optional `conflictCode` / `validationIssues`
+- [ ] **Add idempotency persistence** on the server:
+  - storage keyed by `(actorProfileId, operationId)`
+  - response snapshot for duplicate replay
+  - retention policy (TTL/cleanup)
+- [ ] **Implement server replay behavior**:
+  - first-seen operation executes normally
+  - duplicate operation returns stored prior result without side effects
+  - mismatched payload for same idempotency key is rejected and logged
+- [ ] **Enforce authorization before mutation effects** for all operation-aware endpoints.
+- [ ] **Add operation validation** with explicit schema per `operationType`.
+- [ ] **Instrument observability**:
+  - log `operationId`, `operationType`, `actorProfileId`, `listId`
+  - emit counters for accepted, duplicate, rejected, auth-failed
+  - track replay latency and error rates
+- [ ] **Add migration-safe storage changes**:
+  - table/index for idempotency records
+  - safe backfill/default handling if needed
+- [ ] **Define deterministic error taxonomy** for retry policy:
+  - retryable (transient/server/network)
+  - terminal (validation/auth/conflict)
+- [ ] **Add test coverage (CI mode)**:
+  - same `operationId` submitted twice returns same result and no double-write
+  - same `operationId` with different payload is rejected
+  - unauthorized operations are rejected and not recorded as successful
+  - concurrent duplicate submissions still produce exactly-once effects
+- [ ] **Rollout plan**:
+  - enable on a small set of high-value write operations first
+  - monitor metrics/logs
+  - expand operation-by-operation
+
+### 15.6 Phase 1 starter PR plan (incremental)
+
+Implement Phase 1 in small PRs so each change is reviewable and reversible.
+
+#### PR-1: Shared operation envelope types and validation
+
+Scope:
+- Add shared TypeScript types and Zod schemas for operation-aware writes.
+- Keep old write payloads valid during transition.
+
+Suggested files:
+- `apps/shopshop/src/types/*` (or `src/server/dto/*` if introduced)
+- `packages/db-shopshop/zod-schemas/*` (if shared schema location is preferred)
+
+Deliverables:
+- `OperationEnvelope` type and `OperationType` enum/union.
+- Validation schema for envelope + per-operation payload schema mapping.
+- `schemaVersion` constant and parser helper.
+
+Acceptance checks:
+- Unit tests for valid/invalid envelope parsing.
+- No behavior change to existing endpoints yet.
+
+#### PR-2: Idempotency persistence model + repository
+
+Scope:
+- Add server persistence for idempotency tracking and response replay.
+
+Suggested files:
+- `packages/db-shopshop/prisma/schema.prisma`
+- `apps/shopshop/src/server/data/*` (or `src/lib/*` until server folders are created)
+- Prisma migration files in `packages/db-shopshop/prisma/migrations/*`
+
+Deliverables:
+- New idempotency record model/table keyed by `(actorProfileId, operationId)`.
+- Read/write repository helpers:
+  - `lookupOperationRecord(...)`
+  - `createOperationRecord(...)`
+  - `completeOperationRecord(...)`
+
+Acceptance checks:
+- Migration applies cleanly.
+- Repository tests cover create/find/duplicate-key behavior.
+
+#### PR-3: Operation execution wrapper (exactly-once guard)
+
+Scope:
+- Introduce a reusable server wrapper that enforces idempotency and replay behavior.
+
+Suggested files:
+- `apps/shopshop/src/server/application/*` (or `src/actions/*` helper module)
+
+Deliverables:
+- Wrapper signature similar to:
+  - `executeIdempotentOperation({ actorProfileId, operationId, operationType, payload }, handler)`
+- Behavior:
+  - return stored result on duplicate
+  - reject same key + different payload hash
+  - run handler once for first-seen operation
+
+Acceptance checks:
+- Unit tests for first-run, duplicate replay, and payload-mismatch rejection.
+
+#### PR-4: First endpoint conversion (pilot = list create)
+
+Scope:
+- Convert one high-value endpoint first to de-risk pattern.
+
+Suggested initial target:
+- `POST /api/list` (`apps/shopshop/src/app/api/(actions)/list/route.ts`)
+- Underlying action path in `apps/shopshop/src/actions/ListActions.ts`
+
+Deliverables:
+- Endpoint accepts operation envelope.
+- Action execution routed through idempotency wrapper.
+- Response includes `operationId`, `accepted|rejected`, `serverTimestamp`.
+
+Acceptance checks:
+- Existing route tests updated.
+- New tests:
+  - same `operationId` twice => single persisted list, same response
+  - same key + different payload => rejection
+
+#### PR-5: Extend to remaining write endpoints
+
+Scope:
+- Apply proven pattern across remaining mutation routes.
+
+Targets:
+- `POST /api/category`
+- `POST /api/item`
+- `PUT /api/list/:listId`
+- `DELETE /api/list/:listId`
+- `PUT /api/category/:categoryId`
+- `DELETE /api/category/:categoryId`
+- `PUT /api/item/:itemId`
+- `DELETE /api/item/:itemId`
+- `PUT /api/profile`
+
+Deliverables:
+- Consistent operation envelope handling and replay semantics across all writes.
+
+Acceptance checks:
+- Endpoint test suites include idempotency scenarios for each converted route.
+
+#### PR-6: Observability + retention
+
+Scope:
+- Add operational visibility and cleanup for idempotency records.
+
+Suggested files:
+- `apps/shopshop/src/lib/*` or `src/server/*` logging/metrics modules
+- maintenance script under `scripts/*` (or scheduled job entry)
+
+Deliverables:
+- Structured logs include `operationId`, `operationType`, `actorProfileId`, `listId`, outcome.
+- Metrics counters for accepted/duplicate/rejected/auth-failed.
+- Retention job (TTL cleanup) for stale idempotency records.
+
+Acceptance checks:
+- Logging assertions in targeted tests where practical.
+- Documented retention policy and operational runbook note.
+
+#### Rollout notes
+
+- Convert client callers in a separate PR stream after server compatibility lands.
+- Maintain backward-compatible payload handling until all web flows are migrated.
+- Treat mobile clients as first-class consumers of the operation envelope once stable.
+
+---
