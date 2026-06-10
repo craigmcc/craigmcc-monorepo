@@ -138,6 +138,7 @@ export function tryParseOperationEnvelope(data: unknown): OperationEnvelope | nu
 
 /**
  * Check if a given operationType is valid.
+ * Returns boolean intentionally (avoid type predicate in Markdown example code).
  */
 export function isValidOperationType(operationType: string): boolean {
   return OperationTypeSchema.safeParse(operationType).success;
