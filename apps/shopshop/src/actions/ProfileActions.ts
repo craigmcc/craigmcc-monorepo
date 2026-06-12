@@ -27,6 +27,10 @@ import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 // Internal Imports ----------------------------------------------------------
 
 import { findProfile } from "@/lib/ProfileServerHelper";
+import {
+  isPrismaRecordNotFoundError,
+  isPrismaUniqueConstraintError,
+} from "@/lib/PrismaErrorHelpers";
 
 // Public Objects ------------------------------------------------------------
 
@@ -64,7 +68,7 @@ export async function updateProfile(data: ProfileUpdateSchemaType): Promise<Acti
         },
       });
       if (existing) {
-        return ({ message: "That email address is already in use", status: 409 });
+        return ({ message: EMAIL_IN_USE_MESSAGE, status: 409 });
       }
     }
 
@@ -81,6 +85,24 @@ export async function updateProfile(data: ProfileUpdateSchemaType): Promise<Acti
     return ({ model: updated });
 
   } catch (error) {
+    if (isPrismaUniqueConstraintError(error)) {
+      logger.warn({
+        context: "ProfileActions.updateProfile",
+        error,
+        message: "Profile update hit unique constraint",
+      });
+      return ({ message: EMAIL_IN_USE_MESSAGE, status: 409 });
+    }
+
+    if (isPrismaRecordNotFoundError(error)) {
+      logger.warn({
+        context: "ProfileActions.updateProfile",
+        error,
+        message: "Profile update raced with another operation",
+      });
+      return ({ message: NO_PROFILE_MESSAGE, status: 404 });
+    }
+
     logger.error({
       context: "ProfileActions.updateProfile",
       error,
@@ -92,4 +114,7 @@ export async function updateProfile(data: ProfileUpdateSchemaType): Promise<Acti
 }
 
 // Private Objects -----------------------------------------------------------
+
+const EMAIL_IN_USE_MESSAGE = "That email address is already in use";
+const NO_PROFILE_MESSAGE = "No Profile found for the signed-in user";
 
