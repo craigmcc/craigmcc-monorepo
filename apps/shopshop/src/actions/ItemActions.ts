@@ -24,6 +24,10 @@ import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 
 import { lookupCategoryById, lookupItemById } from "@/lib/CategoryHelpers";
 import { lookupListMembership } from "@/lib/ListHelpers";
+import {
+  isPrismaForeignKeyConstraintError,
+  isPrismaRecordNotFoundError,
+} from "@/lib/PrismaErrorHelpers";
 import { findProfile } from "@/lib/ProfileServerHelper";
 
 // Public Objects ------------------------------------------------------------
@@ -100,6 +104,15 @@ export async function createItem(data: ItemCreateSchemaType): Promise<ActionResu
     return { model: item };
 
   } catch (error) {
+    if (isPrismaForeignKeyConstraintError(error)) {
+      logger.warn({
+        context: "ItemActions.createItem",
+        error,
+        message: "Item create hit foreign key constraint",
+      });
+      return { message: NO_CATEGORY_MESSAGE, status: 404 };
+    }
+
     logger.error({
       context: "ItemActions.createItem",
       error,
@@ -173,6 +186,15 @@ export async function deleteItem(itemId: IdSchemaType): Promise<ActionResult<Ite
     return { model: deletedItem };
 
   } catch (error) {
+    if (isPrismaRecordNotFoundError(error)) {
+      logger.warn({
+        context: "ItemActions.deleteItem",
+        error,
+        message: "Item delete raced with another operation",
+      });
+      return { message: NO_ITEM_MESSAGE, status: 404 };
+    }
+
     logger.error({
       context: "ItemActions.deleteItem",
       error,
@@ -261,6 +283,15 @@ export async function updateItem(itemId: IdSchemaType, data: ItemUpdateSchemaTyp
     return { model: updatedItem };
 
   } catch (error) {
+    if (isPrismaRecordNotFoundError(error)) {
+      logger.warn({
+        context: "ItemActions.updateItem",
+        error,
+        message: "Item update raced with another operation",
+      });
+      return { message: NO_ITEM_MESSAGE, status: 404 };
+    }
+
     logger.error({
       context: "ItemActions.updateItem",
       error,

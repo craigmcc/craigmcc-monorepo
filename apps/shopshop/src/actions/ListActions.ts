@@ -24,6 +24,10 @@ import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 // Internal Imports ----------------------------------------------------------
 
 import { populateList } from "@/lib/ListHelpers";
+import {
+  isPrismaForeignKeyConstraintError,
+  isPrismaRecordNotFoundError,
+} from "@/lib/PrismaErrorHelpers";
 import { findProfile } from "@/lib/ProfileServerHelper";
 
 // Public Objects ------------------------------------------------------------
@@ -79,6 +83,15 @@ export async function createList(data: ListCreateSchemaType): Promise<ActionResu
     return { model: createdList };
 
   } catch (error) {
+    if (isPrismaForeignKeyConstraintError(error)) {
+      logger.warn({
+        context: "ListActions.createList",
+        error,
+        message: "List create hit foreign key constraint",
+      });
+      return { message: ERRORS.AUTHENTICATION, status: 401 };
+    }
+
     logger.error({
       context: "ListActions.createList",
       error,
@@ -138,6 +151,15 @@ export async function deleteList(listId: IdSchemaType): Promise<ActionResult<Lis
     return { model: deletedList };
 
   } catch (error) {
+    if (isPrismaRecordNotFoundError(error)) {
+      logger.warn({
+        context: "ListActions.deleteList",
+        error,
+        message: "List delete raced with another operation",
+      });
+      return { message: NO_LIST_MESSAGE, status: 404 };
+    }
+
     logger.error({
       context: "ListActions.deleteList",
       error,
@@ -211,6 +233,15 @@ export async function updateList(listId: IdSchemaType, data: ListUpdateSchemaTyp
     return { model: updatedList };
 
   } catch (error) {
+    if (isPrismaRecordNotFoundError(error)) {
+      logger.warn({
+        context: "ListActions.updateList",
+        error,
+        message: "List update raced with another operation",
+      });
+      return { message: NO_LIST_MESSAGE, status: 404 };
+    }
+
     logger.error({
       context: "ListActions.updateList",
       error,
@@ -224,6 +255,7 @@ export async function updateList(listId: IdSchemaType, data: ListUpdateSchemaTyp
 // Private Objects -----------------------------------------------------------
 
 const NOT_AUTHORIZED_MESSAGE = "This Profile is not authorized to perform this action";
+const NO_LIST_MESSAGE = "No List found for the specified ID";
 
 async function findAdminMembership(listId: string, profileId: string) {
   return dbShopShop.member.findFirst({

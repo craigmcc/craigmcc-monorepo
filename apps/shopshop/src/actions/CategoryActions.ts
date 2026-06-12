@@ -24,6 +24,10 @@ import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 
 import { lookupCategoryById } from "@/lib/CategoryHelpers";
 import { lookupListMembership } from "@/lib/ListHelpers";
+import {
+  isPrismaForeignKeyConstraintError,
+  isPrismaRecordNotFoundError,
+} from "@/lib/PrismaErrorHelpers";
 import { findProfile } from "@/lib/ProfileServerHelper";
 
 // Public Objects ------------------------------------------------------------
@@ -76,6 +80,15 @@ export async function createCategory(data: CategoryCreateSchemaType): Promise<Ac
     return { model: category };
 
   } catch (error) {
+    if (isPrismaForeignKeyConstraintError(error)) {
+      logger.warn({
+        context: "CategoryActions.createCategory",
+        error,
+        message: "Category create hit foreign key constraint",
+      });
+      return { message: NO_LIST_MESSAGE, status: 404 };
+    }
+
     logger.error({
       context: "CategoryActions.createCategory",
       error,
@@ -148,6 +161,15 @@ export async function deleteCategory(categoryId: IdSchemaType): Promise<ActionRe
     return { model: deletedCategory };
 
   } catch (error) {
+    if (isPrismaRecordNotFoundError(error)) {
+      logger.warn({
+        context: "CategoryActions.deleteCategory",
+        error,
+        message: "Category delete raced with another operation",
+      });
+      return { message: NO_CATEGORY_MESSAGE, status: 404 };
+    }
+
     logger.error({
       context: "CategoryActions.deleteCategory",
       error,
@@ -235,6 +257,15 @@ export async function updateCategory(categoryId: IdSchemaType, data: CategoryUpd
     return { model: updatedCategory };
 
   } catch (error) {
+    if (isPrismaRecordNotFoundError(error)) {
+      logger.warn({
+        context: "CategoryActions.updateCategory",
+        error,
+        message: "Category update raced with another operation",
+      });
+      return { message: NO_CATEGORY_MESSAGE, status: 404 };
+    }
+
     logger.error({
       context: "CategoryActions.updateCategory",
       error,
@@ -248,5 +279,6 @@ export async function updateCategory(categoryId: IdSchemaType, data: CategoryUpd
 // Private Objects -----------------------------------------------------------
 
 const NO_CATEGORY_MESSAGE = "No Category found for the specified ID";
+const NO_LIST_MESSAGE = "No List found for the specified ID";
 const NOT_AUTHORIZED_MESSAGE = "This Profile is not authorized to perform this action";
 

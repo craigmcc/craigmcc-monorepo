@@ -158,7 +158,9 @@ model Profile {
   // /// Lists created by this Profile
   // lists   List[]
   /// Members this Profile is part of
-  members Member[]
+  members          Member[]
+  /// OperationRecords associated with this Profile as the actor
+  operationRecords OperationRecord[]
 
   @@map("profiles")
 }
@@ -226,4 +228,30 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+// IDEMPOTENCY MODELS --------------------------------------------------------
+
+model OperationRecord {
+  id String @id @default(uuid())
+
+  actorProfileId String  @map("actor_profile_id")
+  actorProfile   Profile @relation(fields: [actorProfileId], references: [id], onDelete: Cascade)
+  operationId    String  @map("operation_id")
+  operationType  String  @map("operation_type")
+  payloadHash    String  @map("payload_hash")
+
+  status         String  @default("PENDING")
+  responseStatus Int?    @map("response_status")
+  responseBody   Json?   @map("response_body")
+  conflictCode   String? @map("conflict_code")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@unique([actorProfileId, operationId])
+  @@index([createdAt])
+  @@index([actorProfileId])
+  @@map("operation_records")
 }
