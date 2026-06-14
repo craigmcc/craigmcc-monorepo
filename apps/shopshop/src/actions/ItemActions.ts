@@ -23,9 +23,9 @@ import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 // Internal Imports ----------------------------------------------------------
 
 import { executeIdempotentOperation } from "@/lib/ExecuteIdempotentOperation";
+import { extractOperationId } from "@/lib/OperationIdempotencyHelpers";
 import { lookupCategoryById, lookupItemById } from "@/lib/CategoryHelpers";
 import { lookupListMembership } from "@/lib/ListHelpers";
-import { safeParseOperationEnvelope } from "@/lib/OperationEnvelopeHelpers";
 import {
   isPrismaForeignKeyConstraintError,
   isPrismaRecordNotFoundError,
@@ -106,7 +106,7 @@ export async function createItem(data: ItemCreateSchemaType, operationEnvelope?:
       return { model: item };
     };
 
-    const operationId = parseOperationId(operationEnvelope, "createItem");
+    const operationId = extractOperationId(operationEnvelope, "createItem");
     if (!operationId) {
       return mutateItem();
     }
@@ -200,7 +200,7 @@ export async function deleteItem(itemId: IdSchemaType, operationEnvelope?: unkno
       return { model: deletedItem };
     };
 
-    const operationId = parseOperationId(operationEnvelope, "deleteItem");
+    const operationId = extractOperationId(operationEnvelope, "deleteItem");
     if (!operationId) {
       return mutateItem();
     }
@@ -312,7 +312,7 @@ export async function updateItem(itemId: IdSchemaType, data: ItemUpdateSchemaTyp
       return { model: updatedItem };
     };
 
-    const operationId = parseOperationId(operationEnvelope, "updateItem");
+    const operationId = extractOperationId(operationEnvelope, "updateItem");
     if (!operationId) {
       return mutateItem();
     }
@@ -354,23 +354,4 @@ const NO_CATEGORY_MESSAGE = "No Category found for the specified ID";
 const NO_ITEM_MESSAGE = "No Item found for the specified ID";
 const NOT_AUTHORIZED_MESSAGE = "This Profile is not authorized to perform this action";
 
-function parseOperationId(
-  operationEnvelope: unknown,
-  operationType: "createItem" | "deleteItem" | "updateItem",
-): string | null {
-  if (!operationEnvelope) {
-    return null;
-  }
-
-  const result = safeParseOperationEnvelope(operationEnvelope);
-  if (!result.success) {
-    return null;
-  }
-
-  if (result.data.operationType !== operationType) {
-    return null;
-  }
-
-  return result.data.operationId;
-}
 

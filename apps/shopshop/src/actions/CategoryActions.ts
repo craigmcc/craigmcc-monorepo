@@ -23,7 +23,7 @@ import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 // Internal Imports ----------------------------------------------------------
 
 import { executeIdempotentOperation } from "@/lib/ExecuteIdempotentOperation";
-import { safeParseOperationEnvelope } from "@/lib/OperationEnvelopeHelpers";
+import { extractOperationId } from "@/lib/OperationIdempotencyHelpers";
 import { lookupCategoryById } from "@/lib/CategoryHelpers";
 import { lookupListMembership } from "@/lib/ListHelpers";
 import {
@@ -82,7 +82,7 @@ export async function createCategory(data: CategoryCreateSchemaType, operationEn
       return { model: category };
     };
 
-    const operationId = parseOperationId(operationEnvelope, "createCategory");
+    const operationId = extractOperationId(operationEnvelope, "createCategory");
     if (!operationId) {
       return mutateCategory();
     }
@@ -175,7 +175,7 @@ export async function deleteCategory(categoryId: IdSchemaType, operationEnvelope
       return { model: deletedCategory };
     };
 
-    const operationId = parseOperationId(operationEnvelope, "deleteCategory");
+    const operationId = extractOperationId(operationEnvelope, "deleteCategory");
     if (!operationId) {
       return mutateCategory();
     }
@@ -286,7 +286,7 @@ export async function updateCategory(categoryId: IdSchemaType, data: CategoryUpd
       return { model: updatedCategory };
     };
 
-    const operationId = parseOperationId(operationEnvelope, "updateCategory");
+    const operationId = extractOperationId(operationEnvelope, "updateCategory");
     if (!operationId) {
       return mutateCategory();
     }
@@ -327,23 +327,4 @@ const NO_CATEGORY_MESSAGE = "No Category found for the specified ID";
 const NO_LIST_MESSAGE = "No List found for the specified ID";
 const NOT_AUTHORIZED_MESSAGE = "This Profile is not authorized to perform this action";
 
-function parseOperationId(
-  operationEnvelope: unknown,
-  operationType: "createCategory" | "deleteCategory" | "updateCategory",
-): string | null {
-  if (!operationEnvelope) {
-    return null;
-  }
-
-  const result = safeParseOperationEnvelope(operationEnvelope);
-  if (!result.success) {
-    return null;
-  }
-
-  if (result.data.operationType !== operationType) {
-    return null;
-  }
-
-  return result.data.operationId;
-}
 
