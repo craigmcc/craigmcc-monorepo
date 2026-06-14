@@ -92,12 +92,12 @@ Expected tests:
 
 ## Acceptance Criteria
 
-- [ ] First-seen request creates `PENDING`, executes mutation, and completes record.
-- [ ] Duplicate same-key + same-payload replays stored response without re-running mutation.
-- [ ] Duplicate same-key + different-payload returns conflict (deterministic status/message/code).
+- [x] First-seen request creates `PENDING`, executes mutation, and completes record.
+- [x] Duplicate same-key + same-payload replays stored response without re-running mutation.
+- [x] Duplicate same-key + different-payload returns conflict (deterministic status/message/code).
 - [ ] Concurrent duplicate requests resolve deterministically (one writer, one replay/retry path).
 - [ ] Tests cover create/replay/mismatch/race branches.
-- [ ] CI passes: `pnpm --filter shopshop test:ci && lint && check-types`.
+- [x] CI passes: `pnpm --filter shopshop test:ci && lint && check-types`.
 
 ## Suggested Files
 
@@ -115,16 +115,16 @@ Existing dependencies from PR-2:
 ## Test Cases
 
 ### First-seen execution
-- [ ] Writes succeed and persist `COMPLETED` snapshot.
-- [ ] Repository record has expected status/body/statusCode/completedAt.
+- [x] Writes succeed and persist `COMPLETED` snapshot.
+- [x] Repository record has expected status/body/statusCode/completedAt.
 
 ### Replay
-- [ ] Duplicate key + same payload returns stored snapshot.
-- [ ] Underlying mutation side effects occur once.
+- [x] Duplicate key + same payload returns stored snapshot.
+- [x] Underlying mutation side effects occur once.
 
 ### Payload mismatch
-- [ ] Duplicate key + different payload returns conflict.
-- [ ] Conflict code/message/status are stable and asserted.
+- [x] Duplicate key + different payload returns conflict.
+- [x] Conflict code/message/status are stable and asserted.
 
 ### Race handling
 - [ ] Two concurrent identical requests produce deterministic outcome.
@@ -132,23 +132,23 @@ Existing dependencies from PR-2:
 
 ## Task Checklist
 
-- [ ] Implement idempotent execution wrapper.
-- [ ] Integrate wrapper into `apps/shopshop/src/actions/ProfileActions.ts`.
-- [ ] Integrate wrapper into `apps/shopshop/src/actions/ListActions.ts`.
-- [ ] Integrate wrapper into `apps/shopshop/src/actions/CategoryActions.ts`.
-- [ ] Integrate wrapper into `apps/shopshop/src/actions/ItemActions.ts`.
-- [ ] Add/adjust tests for all scenarios above.
-- [ ] Verify lint: `pnpm --filter shopshop lint`.
-- [ ] Verify types: `pnpm --filter shopshop check-types`.
-- [ ] Verify tests: `pnpm --filter shopshop test:ci`.
-- [ ] Open PR with focused change set only.
+- [x] Implement idempotent execution wrapper.
+- [x] Integrate wrapper into `apps/shopshop/src/actions/ProfileActions.ts`.
+- [x] Integrate wrapper into `apps/shopshop/src/actions/ListActions.ts`.
+- [x] Integrate wrapper into `apps/shopshop/src/actions/CategoryActions.ts`.
+- [x] Integrate wrapper into `apps/shopshop/src/actions/ItemActions.ts`.
+- [x] Add/adjust tests for all scenarios above.
+- [x] Verify lint: `pnpm --filter shopshop lint`.
+- [x] Verify types: `pnpm --filter shopshop check-types`.
+- [x] Verify tests: `pnpm --filter shopshop test:ci`.
+- [x] Open PR with focused change set only.
 
 ## Definition of Done
 
 - [ ] Acceptance criteria complete.
-- [ ] CI green.
+- [x] CI green.
 - [ ] Replay/mismatch/race behavior test-covered.
-- [ ] No unrelated refactors or contract drift.
+- [x] No unrelated refactors or contract drift.
 
 ## PR-3 Kickoff Checklist and Suggested Commits
 
