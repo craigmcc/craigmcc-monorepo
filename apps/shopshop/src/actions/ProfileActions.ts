@@ -14,7 +14,7 @@
 import {
   ActionResult,
   ERRORS,
-  ValidationActionResult
+  ValidationActionResult,
 } from "@repo/daisy-form/ActionResult";
 import { dbShopShop } from "@repo/db-shopshop";
 import type { Profile } from "@repo/db-shopshop/types";
@@ -26,6 +26,8 @@ import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 
 // Internal Imports ----------------------------------------------------------
 
+import { executeIdempotentOperation } from "@/lib/ExecuteIdempotentOperation";
+import { safeParseOperationEnvelope } from "@/lib/OperationEnvelopeHelpers";
 import { findProfile } from "@/lib/ProfileServerHelper";
 import {
   isPrismaRecordNotFoundError,
@@ -34,7 +36,7 @@ import {
 
 // Public Objects ------------------------------------------------------------
 
-export async function updateProfile(data: ProfileUpdateSchemaType): Promise<ActionResult<Profile>> {
+export async function updateProfile(data: ProfileUpdateSchemaType, operationEnvelope?: unknown): Promise<ActionResult<Profile>> {
 
   try {
 
@@ -72,17 +74,30 @@ export async function updateProfile(data: ProfileUpdateSchemaType): Promise<Acti
       }
     }
 
-    // MUTATION - Update the Profile and the corresponding User
-    const updated = await dbShopShop.profile.update({
-      data,
-      where: { id: profile.id }
-    });
-    await dbShopShop.user.update({
-      data,
-      where: { email: profile.email },
-    });
+    const operationId = parseUpdateProfileOperationId(operationEnvelope);
+    const mutateProfile = async (): Promise<ActionResult<Profile>> => {
+      const updated = await dbShopShop.profile.update({
+        data,
+        where: { id: profile.id },
+      });
+      await dbShopShop.user.update({
+        data,
+        where: { email: profile.email },
+      });
 
-    return ({ model: updated });
+      return { model: updated };
+    };
+
+    if (!operationId) {
+      return mutateProfile();
+    }
+
+    return executeIdempotentOperation<Profile>({
+      actorProfileId: profile.id,
+      operationId,
+      operationType: "updateProfile",
+      payload: data,
+    }, mutateProfile);
 
   } catch (error) {
     if (isPrismaUniqueConstraintError(error)) {
@@ -117,4 +132,21 @@ export async function updateProfile(data: ProfileUpdateSchemaType): Promise<Acti
 
 const EMAIL_IN_USE_MESSAGE = "That email address is already in use";
 const NO_PROFILE_MESSAGE = "No Profile found for the signed-in user";
+
+function parseUpdateProfileOperationId(operationEnvelope: unknown): string | null {
+  if (!operationEnvelope) {
+    return null;
+  }
+
+  const result = safeParseOperationEnvelope(operationEnvelope);
+  if (!result.success) {
+    return null;
+  }
+
+  if (result.data.operationType !== "updateProfile") {
+    return null;
+  }
+
+  return result.data.operationId;
+}
 
