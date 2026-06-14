@@ -25,6 +25,7 @@ import { lookupProfileByEmail } from "@/lib/ProfileHelpers";
 import { setProfile } from "@/lib/ProfileServerHelper";
 import { BaseUtils } from "@/test/BaseUtils";
 import { PROFILES } from "@/test/SeedData";
+import { OPERATION_ENVELOPE_SCHEMA_VERSION } from "@/types/OperationEnvelope";
 
 const CATEGORY_LIST_MISMATCH_MESSAGE = "Specified Category does not belong to the specified List";
 const NO_CATEGORY_MESSAGE = "No Category found for the specified ID";
@@ -182,6 +183,50 @@ describe("ItemActions", () => {
 
     });
 
+    it("replays duplicate createItem with same payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestCategory = await lookupCategoryByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const data: ItemCreateSchemaType = {
+        categoryId: guestCategory!.id,
+        listId: guestCategory!.listId,
+        name: "Idempotent Item",
+      };
+      const operationEnvelope = makeEnvelope("11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "createItem", data);
+
+      const first = await createItem(data, operationEnvelope);
+      const second = await createItem(data, operationEnvelope);
+
+      expect(first.model).toBeDefined();
+      expect(second).toEqual(first);
+    });
+
+    it("rejects duplicate createItem with mismatched payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestCategory = await lookupCategoryByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const firstData: ItemCreateSchemaType = {
+        categoryId: guestCategory!.id,
+        listId: guestCategory!.listId,
+        name: "First Item",
+      };
+      const secondData: ItemCreateSchemaType = {
+        categoryId: guestCategory!.id,
+        listId: guestCategory!.listId,
+        name: "Second Item",
+      };
+      const operationEnvelope = makeEnvelope("22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "createItem", firstData);
+
+      await createItem(firstData, operationEnvelope);
+      const conflict = await createItem(secondData, operationEnvelope);
+
+      expect(conflict.model).toBeUndefined();
+      expect(conflict.message).toBe("Operation payload does not match existing operationId");
+      expect(conflict.status).toBe(409);
+    });
+
   });
 
   describe("updateItem", () => {
@@ -286,6 +331,44 @@ describe("ItemActions", () => {
 
     });
 
+    it("replays duplicate updateItem with same payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestItem = await lookupItemByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const data: ItemUpdateSchemaType = {
+        name: "Replay Item Update",
+      };
+      const operationEnvelope = makeEnvelope("33333333-cccc-4ccc-8ccc-cccccccccccc", "updateItem", data);
+
+      const first = await updateItem(guestItem!.id, data, operationEnvelope);
+      const second = await updateItem(guestItem!.id, data, operationEnvelope);
+
+      expect(first.model).toBeDefined();
+      expect(second).toEqual(first);
+    });
+
+    it("rejects duplicate updateItem with mismatched payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestItem = await lookupItemByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const firstData: ItemUpdateSchemaType = {
+        name: "First Update Item",
+      };
+      const secondData: ItemUpdateSchemaType = {
+        name: "Second Update Item",
+      };
+      const operationEnvelope = makeEnvelope("44444444-dddd-4ddd-8ddd-dddddddddddd", "updateItem", firstData);
+
+      await updateItem(guestItem!.id, firstData, operationEnvelope);
+      const conflict = await updateItem(guestItem!.id, secondData, operationEnvelope);
+
+      expect(conflict.model).toBeUndefined();
+      expect(conflict.message).toBe("Operation payload does not match existing operationId");
+      expect(conflict.status).toBe(409);
+    });
+
   });
 
   describe("deleteItem", () => {
@@ -356,8 +439,56 @@ describe("ItemActions", () => {
 
     });
 
+    it("replays duplicate deleteItem with same payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestItem = await lookupItemByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const operationEnvelope = makeEnvelope("55555555-eeee-4eee-8eee-eeeeeeeeeeee", "deleteItem", {
+        itemId: guestItem!.id,
+      });
+
+      const first = await deleteItem(guestItem!.id, operationEnvelope);
+      const second = await deleteItem(guestItem!.id, operationEnvelope);
+
+      expect(first.model).toBeDefined();
+      expect(second).toEqual(first);
+    });
+
+    it("rejects duplicate deleteItem with mismatched payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestItem = await lookupItemByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const operationEnvelope = makeEnvelope("66666666-ffff-4fff-8fff-ffffffffffff", "deleteItem", {
+        itemId: guestItem!.id,
+      });
+      const differentItemId = "99999999-9999-4999-8999-999999999999";
+
+      await deleteItem(guestItem!.id, operationEnvelope);
+      const conflict = await deleteItem(differentItemId, operationEnvelope);
+
+      expect(conflict.model).toBeUndefined();
+      expect(conflict.message).toBe("Operation payload does not match existing operationId");
+      expect(conflict.status).toBe(409);
+    });
+
   });
 
 });
+
+function makeEnvelope(
+  operationId: string,
+  operationType: "createItem" | "deleteItem" | "updateItem",
+  payload: unknown,
+) {
+  return {
+    clientTimestamp: new Date("2026-06-14T00:00:00.000Z"),
+    operationId,
+    operationType,
+    payload,
+    schemaVersion: OPERATION_ENVELOPE_SCHEMA_VERSION,
+  };
+}
 
 
