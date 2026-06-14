@@ -23,7 +23,9 @@ import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 
 // Internal Imports ----------------------------------------------------------
 
+import { executeIdempotentOperation } from "@/lib/ExecuteIdempotentOperation";
 import { populateList } from "@/lib/ListHelpers";
+import { safeParseOperationEnvelope } from "@/lib/OperationEnvelopeHelpers";
 import {
   isPrismaForeignKeyConstraintError,
   isPrismaRecordNotFoundError,
@@ -32,7 +34,7 @@ import { findProfile } from "@/lib/ProfileServerHelper";
 
 // Public Objects ------------------------------------------------------------
 
-export async function createList(data: ListCreateSchemaType): Promise<ActionResult<List>> {
+export async function createList(data: ListCreateSchemaType, operationEnvelope?: unknown): Promise<ActionResult<List>> {
 
   try {
 
@@ -55,32 +57,45 @@ export async function createList(data: ListCreateSchemaType): Promise<ActionResu
       return ValidationActionResult<List>(result.error);
     }
 
-    // MUTATION - Create the list, the creator's ADMIN membership, and default content atomically
-    const createdList = await dbShopShop.$transaction(async (transaction) => {
-      const list = await transaction.list.create({
-        data: {
-          ...result.data,
-          members: {
-            create: {
-              profileId: profile.id,
-              role: MemberRole.ADMIN,
+    const mutateList = async (): Promise<ActionResult<List>> => {
+      const createdList = await dbShopShop.$transaction(async (transaction) => {
+        const list = await transaction.list.create({
+          data: {
+            ...result.data,
+            members: {
+              create: {
+                profileId: profile.id,
+                role: MemberRole.ADMIN,
+              },
             },
           },
-        },
+        });
+
+        await populateList(list.id, true, true, transaction);
+
+        return list;
       });
 
-      await populateList(list.id, true, true, transaction);
+      logger.info({
+        context: "ListActions.createList",
+        listId: createdList.id,
+        profileId: profile.id,
+      });
 
-      return list;
-    });
+      return { model: createdList };
+    };
 
-    logger.info({
-      context: "ListActions.createList",
-      listId: createdList.id,
-      profileId: profile.id,
-    });
+    const operationId = parseOperationId(operationEnvelope, "createList");
+    if (!operationId) {
+      return mutateList();
+    }
 
-    return { model: createdList };
+    return executeIdempotentOperation<List>({
+      actorProfileId: profile.id,
+      operationId,
+      operationType: "createList",
+      payload: result.data,
+    }, mutateList);
 
   } catch (error) {
     if (isPrismaForeignKeyConstraintError(error)) {
@@ -102,7 +117,7 @@ export async function createList(data: ListCreateSchemaType): Promise<ActionResu
 
 }
 
-export async function deleteList(listId: IdSchemaType): Promise<ActionResult<List>> {
+export async function deleteList(listId: IdSchemaType, operationEnvelope?: unknown): Promise<ActionResult<List>> {
 
   try {
 
@@ -123,32 +138,46 @@ export async function deleteList(listId: IdSchemaType): Promise<ActionResult<Lis
       return { message: ERRORS.AUTHENTICATION, status: 401 };
     }
 
-    // AUTHORIZATION - Must be an ADMIN member of this list
-    const member = await findAdminMembership(validatedListId.data, profile.id);
-    if (!member) {
-      logger.warn({
-        context: "ListActions.deleteList",
-        listId: validatedListId.data,
-        profileId: profile.id,
-        message: "Unauthorized list deletion attempt",
+    const mutateList = async (): Promise<ActionResult<List>> => {
+      const member = await findAdminMembership(validatedListId.data, profile.id);
+      if (!member) {
+        logger.warn({
+          context: "ListActions.deleteList",
+          listId: validatedListId.data,
+          profileId: profile.id,
+          message: "Unauthorized list deletion attempt",
+        });
+        return { message: NOT_AUTHORIZED_MESSAGE, status: 403 };
+      }
+
+      const deletedList = await dbShopShop.list.delete({
+        where: {
+          id: validatedListId.data,
+        },
       });
-      return { message: NOT_AUTHORIZED_MESSAGE, status: 403 };
+
+      logger.info({
+        context: "ListActions.deleteList",
+        listId: deletedList.id,
+        profileId: profile.id,
+      });
+
+      return { model: deletedList };
+    };
+
+    const operationId = parseOperationId(operationEnvelope, "deleteList");
+    if (operationId) {
+      return executeIdempotentOperation<List>({
+        actorProfileId: profile.id,
+        operationId,
+        operationType: "deleteList",
+        payload: {
+          listId: validatedListId.data,
+        },
+      }, mutateList);
     }
 
-    // MUTATION - Delete the list (Members/Categories/Items cascade via schema)
-    const deletedList = await dbShopShop.list.delete({
-      where: {
-        id: validatedListId.data,
-      },
-    });
-
-    logger.info({
-      context: "ListActions.deleteList",
-      listId: deletedList.id,
-      profileId: profile.id,
-    });
-
-    return { model: deletedList };
+    return mutateList();
 
   } catch (error) {
     if (isPrismaRecordNotFoundError(error)) {
@@ -170,7 +199,7 @@ export async function deleteList(listId: IdSchemaType): Promise<ActionResult<Lis
 
 }
 
-export async function updateList(listId: IdSchemaType, data: ListUpdateSchemaType): Promise<ActionResult<List>> {
+export async function updateList(listId: IdSchemaType, data: ListUpdateSchemaType, operationEnvelope?: unknown): Promise<ActionResult<List>> {
 
   try {
 
@@ -216,21 +245,37 @@ export async function updateList(listId: IdSchemaType, data: ListUpdateSchemaTyp
       return ValidationActionResult<List>(result.error);
     }
 
-    // MUTATION - Update list properties
-    const updatedList = await dbShopShop.list.update({
-      data: result.data,
-      where: {
-        id: validatedListId.data,
+    const mutateList = async (): Promise<ActionResult<List>> => {
+      const updatedList = await dbShopShop.list.update({
+        data: result.data,
+        where: {
+          id: validatedListId.data,
+        },
+      });
+
+      logger.info({
+        context: "ListActions.updateList",
+        listId: updatedList.id,
+        profileId: profile.id,
+      });
+
+      return { model: updatedList };
+    };
+
+    const operationId = parseOperationId(operationEnvelope, "updateList");
+    if (!operationId) {
+      return mutateList();
+    }
+
+    return executeIdempotentOperation<List>({
+      actorProfileId: profile.id,
+      operationId,
+      operationType: "updateList",
+      payload: {
+        data: result.data,
+        listId: validatedListId.data,
       },
-    });
-
-    logger.info({
-      context: "ListActions.updateList",
-      listId: updatedList.id,
-      profileId: profile.id,
-    });
-
-    return { model: updatedList };
+    }, mutateList);
 
   } catch (error) {
     if (isPrismaRecordNotFoundError(error)) {
@@ -256,6 +301,23 @@ export async function updateList(listId: IdSchemaType, data: ListUpdateSchemaTyp
 
 const NOT_AUTHORIZED_MESSAGE = "This Profile is not authorized to perform this action";
 const NO_LIST_MESSAGE = "No List found for the specified ID";
+
+function parseOperationId(operationEnvelope: unknown, operationType: "createList" | "deleteList" | "updateList"): string | null {
+  if (!operationEnvelope) {
+    return null;
+  }
+
+  const result = safeParseOperationEnvelope(operationEnvelope);
+  if (!result.success) {
+    return null;
+  }
+
+  if (result.data.operationType !== operationType) {
+    return null;
+  }
+
+  return result.data.operationId;
+}
 
 async function findAdminMembership(listId: string, profileId: string) {
   return dbShopShop.member.findFirst({
