@@ -22,6 +22,8 @@ import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 
 // Internal Imports ----------------------------------------------------------
 
+import { executeIdempotentOperation } from "@/lib/ExecuteIdempotentOperation";
+import { extractOperationId } from "@/lib/OperationIdempotencyHelpers";
 import { lookupCategoryById, lookupItemById } from "@/lib/CategoryHelpers";
 import { lookupListMembership } from "@/lib/ListHelpers";
 import {
@@ -32,7 +34,7 @@ import { findProfile } from "@/lib/ProfileServerHelper";
 
 // Public Objects ------------------------------------------------------------
 
-export async function createItem(data: ItemCreateSchemaType): Promise<ActionResult<Item>> {
+export async function createItem(data: ItemCreateSchemaType, operationEnvelope?: unknown): Promise<ActionResult<Item>> {
 
   try {
 
@@ -88,20 +90,33 @@ export async function createItem(data: ItemCreateSchemaType): Promise<ActionResu
       return { message: CATEGORY_LIST_MISMATCH_MESSAGE, status: 400 };
     }
 
-    // MUTATION - Create the Item
-    const item = await dbShopShop.item.create({
-      data: result.data,
-    });
+    const mutateItem = async (): Promise<ActionResult<Item>> => {
+      const item = await dbShopShop.item.create({
+        data: result.data,
+      });
 
-    logger.info({
-      categoryId: item.categoryId,
-      context: "ItemActions.createItem",
-      itemId: item.id,
-      listId: item.listId,
-      profileId: profile.id,
-    });
+      logger.info({
+        categoryId: item.categoryId,
+        context: "ItemActions.createItem",
+        itemId: item.id,
+        listId: item.listId,
+        profileId: profile.id,
+      });
 
-    return { model: item };
+      return { model: item };
+    };
+
+    const operationId = extractOperationId(operationEnvelope, "createItem");
+    if (!operationId) {
+      return mutateItem();
+    }
+
+    return executeIdempotentOperation<Item>({
+      actorProfileId: profile.id,
+      operationId,
+      operationType: "createItem",
+      payload: result.data,
+    }, mutateItem);
 
   } catch (error) {
     if (isPrismaForeignKeyConstraintError(error)) {
@@ -123,7 +138,7 @@ export async function createItem(data: ItemCreateSchemaType): Promise<ActionResu
 
 }
 
-export async function deleteItem(itemId: IdSchemaType): Promise<ActionResult<Item>> {
+export async function deleteItem(itemId: IdSchemaType, operationEnvelope?: unknown): Promise<ActionResult<Item>> {
 
   try {
 
@@ -144,46 +159,60 @@ export async function deleteItem(itemId: IdSchemaType): Promise<ActionResult<Ite
       return { message: ERRORS.AUTHENTICATION, status: 401 };
     }
 
-    // AUTHORIZATION - Must be a member of the Item's List
-    const item = await lookupItemById(validatedItemId.data);
-    if (!item) {
-      logger.warn({
+    const mutateItem = async (): Promise<ActionResult<Item>> => {
+      const item = await lookupItemById(validatedItemId.data);
+      if (!item) {
+        logger.warn({
+          context: "ItemActions.deleteItem",
+          itemId: validatedItemId.data,
+          profileId: profile.id,
+          message: "Item not found",
+        });
+        return { message: NO_ITEM_MESSAGE, status: 404 };
+      }
+
+      const member = await lookupListMembership(item.listId, profile.id);
+      if (!member) {
+        logger.warn({
+          context: "ItemActions.deleteItem",
+          itemId: item.id,
+          listId: item.listId,
+          profileId: profile.id,
+          message: "Unauthorized item delete attempt",
+        });
+        return { message: NOT_AUTHORIZED_MESSAGE, status: 403 };
+      }
+
+      const deletedItem = await dbShopShop.item.delete({
+        where: {
+          id: item.id,
+        },
+      });
+
+      logger.info({
+        categoryId: deletedItem.categoryId,
         context: "ItemActions.deleteItem",
+        itemId: deletedItem.id,
+        listId: deletedItem.listId,
+        profileId: profile.id,
+      });
+
+      return { model: deletedItem };
+    };
+
+    const operationId = extractOperationId(operationEnvelope, "deleteItem");
+    if (!operationId) {
+      return mutateItem();
+    }
+
+    return executeIdempotentOperation<Item>({
+      actorProfileId: profile.id,
+      operationId,
+      operationType: "deleteItem",
+      payload: {
         itemId: validatedItemId.data,
-        profileId: profile.id,
-        message: "Item not found",
-      });
-      return { message: NO_ITEM_MESSAGE, status: 404 };
-    }
-
-    const member = await lookupListMembership(item.listId, profile.id);
-    if (!member) {
-      logger.warn({
-        context: "ItemActions.deleteItem",
-        itemId: item.id,
-        listId: item.listId,
-        profileId: profile.id,
-        message: "Unauthorized item delete attempt",
-      });
-      return { message: NOT_AUTHORIZED_MESSAGE, status: 403 };
-    }
-
-    // MUTATION - Delete the Item
-    const deletedItem = await dbShopShop.item.delete({
-      where: {
-        id: item.id,
       },
-    });
-
-    logger.info({
-      categoryId: deletedItem.categoryId,
-      context: "ItemActions.deleteItem",
-      itemId: deletedItem.id,
-      listId: deletedItem.listId,
-      profileId: profile.id,
-    });
-
-    return { model: deletedItem };
+    }, mutateItem);
 
   } catch (error) {
     if (isPrismaRecordNotFoundError(error)) {
@@ -205,7 +234,7 @@ export async function deleteItem(itemId: IdSchemaType): Promise<ActionResult<Ite
 
 }
 
-export async function updateItem(itemId: IdSchemaType, data: ItemUpdateSchemaType): Promise<ActionResult<Item>> {
+export async function updateItem(itemId: IdSchemaType, data: ItemUpdateSchemaType, operationEnvelope?: unknown): Promise<ActionResult<Item>> {
 
   try {
 
@@ -264,23 +293,39 @@ export async function updateItem(itemId: IdSchemaType, data: ItemUpdateSchemaTyp
       return ValidationActionResult<Item>(result.error);
     }
 
-    // MUTATION - Update the Item
-    const updatedItem = await dbShopShop.item.update({
-      data: result.data,
-      where: {
-        id: item.id,
+    const mutateItem = async (): Promise<ActionResult<Item>> => {
+      const updatedItem = await dbShopShop.item.update({
+        data: result.data,
+        where: {
+          id: item.id,
+        },
+      });
+
+      logger.info({
+        categoryId: updatedItem.categoryId,
+        context: "ItemActions.updateItem",
+        itemId: updatedItem.id,
+        listId: updatedItem.listId,
+        profileId: profile.id,
+      });
+
+      return { model: updatedItem };
+    };
+
+    const operationId = extractOperationId(operationEnvelope, "updateItem");
+    if (!operationId) {
+      return mutateItem();
+    }
+
+    return executeIdempotentOperation<Item>({
+      actorProfileId: profile.id,
+      operationId,
+      operationType: "updateItem",
+      payload: {
+        data: result.data,
+        itemId: item.id,
       },
-    });
-
-    logger.info({
-      categoryId: updatedItem.categoryId,
-      context: "ItemActions.updateItem",
-      itemId: updatedItem.id,
-      listId: updatedItem.listId,
-      profileId: profile.id,
-    });
-
-    return { model: updatedItem };
+    }, mutateItem);
 
   } catch (error) {
     if (isPrismaRecordNotFoundError(error)) {
@@ -308,3 +353,5 @@ const CATEGORY_LIST_MISMATCH_MESSAGE = "Specified Category does not belong to th
 const NO_CATEGORY_MESSAGE = "No Category found for the specified ID";
 const NO_ITEM_MESSAGE = "No Item found for the specified ID";
 const NOT_AUTHORIZED_MESSAGE = "This Profile is not authorized to perform this action";
+
+

@@ -29,6 +29,7 @@ import { lookupProfileByEmail } from "@/lib/ProfileHelpers";
 import { setProfile } from "@/lib/ProfileServerHelper";
 import { BaseUtils } from "@/test/BaseUtils";
 import { PROFILES } from "@/test/SeedData";
+import { OPERATION_ENVELOPE_SCHEMA_VERSION } from "@/types/OperationEnvelope";
 
 const NO_CATEGORY_MESSAGE = "No Category found for the specified ID";
 const NOT_AUTHORIZED_MESSAGE = "This Profile is not authorized to perform this action";
@@ -130,6 +131,58 @@ describe("CategoryActions", () => {
 
     });
 
+    it("replays duplicate createCategory with same payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestList = await lookupListByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const data: CategoryCreateSchemaType = {
+        listId: guestList!.id,
+        name: "Idempotent Category",
+      };
+      const operationEnvelope = makeEnvelope("11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "createCategory", data);
+      const categoryCountBefore = await db.category.count({
+        where: {
+          listId: guestList!.id,
+        },
+      });
+
+      const first = await createCategory(data, operationEnvelope);
+      const second = await createCategory(data, operationEnvelope);
+
+      const categoryCountAfter = await db.category.count({
+        where: {
+          listId: guestList!.id,
+        },
+      });
+      expect(first.model).toBeDefined();
+      expect(second).toEqual(first);
+      expect(categoryCountAfter).toBe(categoryCountBefore + 1);
+    });
+
+    it("rejects duplicate createCategory with mismatched payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestList = await lookupListByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const firstData: CategoryCreateSchemaType = {
+        listId: guestList!.id,
+        name: "First Category Payload",
+      };
+      const secondData: CategoryCreateSchemaType = {
+        listId: guestList!.id,
+        name: "Second Category Payload",
+      };
+      const operationEnvelope = makeEnvelope("22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "createCategory", firstData);
+
+      await createCategory(firstData, operationEnvelope);
+      const conflict = await createCategory(secondData, operationEnvelope);
+
+      expect(conflict.model).toBeUndefined();
+      expect(conflict.message).toBe("Operation payload does not match existing operationId");
+      expect(conflict.status).toBe(409);
+    });
+
   });
 
   describe("updateCategory", () => {
@@ -225,6 +278,44 @@ describe("CategoryActions", () => {
 
     });
 
+    it("replays duplicate updateCategory with same payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestCategory = await lookupCategoryByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const data: CategoryUpdateSchemaType = {
+        name: "Replay Update Category",
+      };
+      const operationEnvelope = makeEnvelope("33333333-cccc-4ccc-8ccc-cccccccccccc", "updateCategory", data);
+
+      const first = await updateCategory(guestCategory!.id, data, operationEnvelope);
+      const second = await updateCategory(guestCategory!.id, data, operationEnvelope);
+
+      expect(first.model).toBeDefined();
+      expect(second).toEqual(first);
+    });
+
+    it("rejects duplicate updateCategory with mismatched payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestCategory = await lookupCategoryByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const firstData: CategoryUpdateSchemaType = {
+        name: "First Update Category",
+      };
+      const secondData: CategoryUpdateSchemaType = {
+        name: "Second Update Category",
+      };
+      const operationEnvelope = makeEnvelope("44444444-dddd-4ddd-8ddd-dddddddddddd", "updateCategory", firstData);
+
+      await updateCategory(guestCategory!.id, firstData, operationEnvelope);
+      const conflict = await updateCategory(guestCategory!.id, secondData, operationEnvelope);
+
+      expect(conflict.model).toBeUndefined();
+      expect(conflict.message).toBe("Operation payload does not match existing operationId");
+      expect(conflict.status).toBe(409);
+    });
+
   });
 
   describe("deleteCategory", () => {
@@ -309,7 +400,55 @@ describe("CategoryActions", () => {
 
     });
 
+    it("replays duplicate deleteCategory with same payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestCategory = await lookupCategoryByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const operationEnvelope = makeEnvelope("55555555-eeee-4eee-8eee-eeeeeeeeeeee", "deleteCategory", {
+        categoryId: guestCategory!.id,
+      });
+
+      const first = await deleteCategory(guestCategory!.id, operationEnvelope);
+      const second = await deleteCategory(guestCategory!.id, operationEnvelope);
+
+      expect(first.model).toBeDefined();
+      expect(second).toEqual(first);
+    });
+
+    it("rejects duplicate deleteCategory with mismatched payload", async () => {
+
+      const guestProfile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      const guestCategory = await lookupCategoryByRole(guestProfile!, MemberRole.GUEST);
+      setProfile(guestProfile);
+      const operationEnvelope = makeEnvelope("66666666-ffff-4fff-8fff-ffffffffffff", "deleteCategory", {
+        categoryId: guestCategory!.id,
+      });
+      const differentCategoryId = "99999999-9999-4999-8999-999999999999";
+
+      await deleteCategory(guestCategory!.id, operationEnvelope);
+      const conflict = await deleteCategory(differentCategoryId, operationEnvelope);
+
+      expect(conflict.model).toBeUndefined();
+      expect(conflict.message).toBe("Operation payload does not match existing operationId");
+      expect(conflict.status).toBe(409);
+    });
+
   });
 
 });
+
+function makeEnvelope(
+  operationId: string,
+  operationType: "createCategory" | "deleteCategory" | "updateCategory",
+  payload: unknown,
+) {
+  return {
+    clientTimestamp: new Date("2026-06-14T00:00:00.000Z"),
+    operationId,
+    operationType,
+    payload,
+    schemaVersion: OPERATION_ENVELOPE_SCHEMA_VERSION,
+  };
+}
 

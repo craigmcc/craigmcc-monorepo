@@ -23,6 +23,7 @@ import { lookupProfileByEmail } from "@/lib/ProfileHelpers";
 import { setProfile } from "@/lib/ProfileServerHelper";
 import { BaseUtils } from "@/test/BaseUtils";
 import { PROFILES } from "@/test/SeedData";
+import { OPERATION_ENVELOPE_SCHEMA_VERSION } from "@/types/OperationEnvelope";
 
 const NOT_AUTHORIZED_MESSAGE = "This Profile is not authorized to perform this action";
 const UTILS = new BaseUtils();
@@ -114,6 +115,56 @@ describe("ListActions", () => {
 
     });
 
+    it("replays duplicate createList with same payload and no extra side effects", async () => {
+
+      const profile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      setProfile(profile);
+      const data: ListCreateSchemaType = {
+        name: "Idempotent Create List",
+      };
+      const operationEnvelope = makeEnvelope("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "createList", data);
+      const listCountBefore = await db.list.count();
+
+      const first = await createList(data, operationEnvelope);
+      const second = await createList(data, operationEnvelope);
+
+      const listCountAfter = await db.list.count();
+      expect(first.model).toBeDefined();
+      expect(second).toEqual(first);
+      expect(listCountAfter).toBe(listCountBefore + 1);
+
+      const operationCount = await db.operationRecord.count({
+        where: {
+          actorProfileId: profile!.id,
+          operationId: operationEnvelope.operationId,
+        },
+      });
+      expect(operationCount).toBe(1);
+    });
+
+    it("rejects duplicate createList with mismatched payload", async () => {
+
+      const profile = await lookupProfileByEmail(PROFILES[0]!.email!);
+      setProfile(profile);
+      const firstData: ListCreateSchemaType = {
+        name: "First Create Payload",
+      };
+      const secondData: ListCreateSchemaType = {
+        name: "Second Create Payload",
+      };
+      const operationEnvelope = makeEnvelope("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "createList", firstData);
+
+      await createList(firstData, operationEnvelope);
+      const conflict = await createList(secondData, {
+        ...operationEnvelope,
+        payload: secondData,
+      });
+
+      expect(conflict.model).toBeUndefined();
+      expect(conflict.message).toBe("Operation payload does not match existing operationId");
+      expect(conflict.status).toBe(409);
+    });
+
   });
 
   describe("updateList", () => {
@@ -197,6 +248,47 @@ describe("ListActions", () => {
 
     });
 
+    it("replays duplicate updateList with same payload", async () => {
+
+      const adminProfile = await lookupProfileByEmail(PROFILES[1]!.email!);
+      const list = await lookupListByRole(adminProfile!, MemberRole.ADMIN);
+      setProfile(adminProfile);
+      const data: ListUpdateSchemaType = {
+        name: "Replay Update Name",
+      };
+      const operationEnvelope = makeEnvelope("cccccccc-cccc-4ccc-8ccc-cccccccccccc", "updateList", data);
+
+      const first = await updateList(list!.id, data, operationEnvelope);
+      const second = await updateList(list!.id, data, operationEnvelope);
+
+      expect(first.model).toBeDefined();
+      expect(second).toEqual(first);
+    });
+
+    it("rejects duplicate updateList with mismatched payload", async () => {
+
+      const adminProfile = await lookupProfileByEmail(PROFILES[1]!.email!);
+      const list = await lookupListByRole(adminProfile!, MemberRole.ADMIN);
+      setProfile(adminProfile);
+      const firstData: ListUpdateSchemaType = {
+        name: "First Update Name",
+      };
+      const secondData: ListUpdateSchemaType = {
+        name: "Second Update Name",
+      };
+      const operationEnvelope = makeEnvelope("dddddddd-dddd-4ddd-8ddd-dddddddddddd", "updateList", firstData);
+
+      await updateList(list!.id, firstData, operationEnvelope);
+      const conflict = await updateList(list!.id, secondData, {
+        ...operationEnvelope,
+        payload: secondData,
+      });
+
+      expect(conflict.model).toBeUndefined();
+      expect(conflict.message).toBe("Operation payload does not match existing operationId");
+      expect(conflict.status).toBe(409);
+    });
+
   });
 
   describe("deleteList", () => {
@@ -272,7 +364,54 @@ describe("ListActions", () => {
 
     });
 
+    it("replays duplicate deleteList with same payload", async () => {
+
+      const adminProfile = await lookupProfileByEmail(PROFILES[1]!.email!);
+      const list = await lookupListByRole(adminProfile!, MemberRole.ADMIN);
+      setProfile(adminProfile);
+      const operationEnvelope = makeEnvelope("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", "deleteList", { listId: list!.id });
+
+      const first = await deleteList(list!.id, operationEnvelope);
+      const second = await deleteList(list!.id, operationEnvelope);
+
+      expect(first.model).toBeDefined();
+      expect(second).toEqual(first);
+
+      const deletedList = await db.list.findUnique({
+        where: {
+          id: list!.id,
+        },
+      });
+      expect(deletedList).toBeNull();
+    });
+
+    it("rejects duplicate deleteList with mismatched payload", async () => {
+
+      const adminProfile = await lookupProfileByEmail(PROFILES[1]!.email!);
+      const list = await lookupListByRole(adminProfile!, MemberRole.ADMIN);
+      setProfile(adminProfile);
+      const operationEnvelope = makeEnvelope("ffffffff-ffff-4fff-8fff-ffffffffffff", "deleteList", { listId: list!.id });
+      const differentListId = "99999999-9999-4999-8999-999999999999";
+
+      await deleteList(list!.id, operationEnvelope);
+      const conflict = await deleteList(differentListId, operationEnvelope);
+
+      expect(conflict.model).toBeUndefined();
+      expect(conflict.message).toBe("Operation payload does not match existing operationId");
+      expect(conflict.status).toBe(409);
+    });
+
   });
 
 });
+
+function makeEnvelope(operationId: string, operationType: "createList" | "deleteList" | "updateList", payload: unknown) {
+  return {
+    clientTimestamp: new Date("2026-06-14T00:00:00.000Z"),
+    operationId,
+    operationType,
+    payload,
+    schemaVersion: OPERATION_ENVELOPE_SCHEMA_VERSION,
+  };
+}
 
