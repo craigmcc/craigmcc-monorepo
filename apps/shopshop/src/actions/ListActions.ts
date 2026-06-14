@@ -24,8 +24,8 @@ import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 // Internal Imports ----------------------------------------------------------
 
 import { executeIdempotentOperation } from "@/lib/ExecuteIdempotentOperation";
+import { extractOperationId } from "@/lib/OperationIdempotencyHelpers";
 import { populateList } from "@/lib/ListHelpers";
-import { safeParseOperationEnvelope } from "@/lib/OperationEnvelopeHelpers";
 import {
   isPrismaForeignKeyConstraintError,
   isPrismaRecordNotFoundError,
@@ -85,7 +85,7 @@ export async function createList(data: ListCreateSchemaType, operationEnvelope?:
       return { model: createdList };
     };
 
-    const operationId = parseOperationId(operationEnvelope, "createList");
+    const operationId = extractOperationId(operationEnvelope, "createList");
     if (!operationId) {
       return mutateList();
     }
@@ -165,7 +165,7 @@ export async function deleteList(listId: IdSchemaType, operationEnvelope?: unkno
       return { model: deletedList };
     };
 
-    const operationId = parseOperationId(operationEnvelope, "deleteList");
+    const operationId = extractOperationId(operationEnvelope, "deleteList");
     if (operationId) {
       return executeIdempotentOperation<List>({
         actorProfileId: profile.id,
@@ -262,7 +262,7 @@ export async function updateList(listId: IdSchemaType, data: ListUpdateSchemaTyp
       return { model: updatedList };
     };
 
-    const operationId = parseOperationId(operationEnvelope, "updateList");
+    const operationId = extractOperationId(operationEnvelope, "updateList");
     if (!operationId) {
       return mutateList();
     }
@@ -302,22 +302,6 @@ export async function updateList(listId: IdSchemaType, data: ListUpdateSchemaTyp
 const NOT_AUTHORIZED_MESSAGE = "This Profile is not authorized to perform this action";
 const NO_LIST_MESSAGE = "No List found for the specified ID";
 
-function parseOperationId(operationEnvelope: unknown, operationType: "createList" | "deleteList" | "updateList"): string | null {
-  if (!operationEnvelope) {
-    return null;
-  }
-
-  const result = safeParseOperationEnvelope(operationEnvelope);
-  if (!result.success) {
-    return null;
-  }
-
-  if (result.data.operationType !== operationType) {
-    return null;
-  }
-
-  return result.data.operationId;
-}
 
 async function findAdminMembership(listId: string, profileId: string) {
   return dbShopShop.member.findFirst({
