@@ -2,7 +2,12 @@ packages:
   - "apps/*"
   - "packages/*"
 allowBuilds:
+  '@prisma/engines': true
+  esbuild: true
   msw: false
+  prisma: true
+  sharp: true
+  unrs-resolver: true
 
 catalogs:
   better-auth1:
@@ -101,3 +106,12 @@ catalogs:
     "whatwg-fetch": 3.6.20
   zod:
     zod: 4.3.6
+
+minimumReleaseAgeExclude:
+  - '@turbo/darwin-64@2.10.0'
+  - '@turbo/darwin-arm64@2.10.0'
+  - '@turbo/linux-64@2.10.0'
+  - '@turbo/linux-arm64@2.10.0'
+  - '@turbo/windows-64@2.10.0'
+  - '@turbo/windows-arm64@2.10.0'
+  - turbo@2.10.0
